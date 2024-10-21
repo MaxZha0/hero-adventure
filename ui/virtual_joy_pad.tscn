@@ -1,0 +1,46 @@
+[gd_scene load_steps=4 format=3 uid="uid://dtp0bjryykpa"]
+
+[ext_resource type="Texture2D" uid="uid://ce7joqylo60aq" path="res://res/Backspace_Key_Light.png" id="1_svfd1"]
+[ext_resource type="Texture2D" uid="uid://b3hthbpn30os1" path="res://res/Arrow_Left_Key_Light.png" id="2_ud4gb"]
+[ext_resource type="Texture2D" uid="uid://dj1lwvg5ifpdu" path="res://res/Arrow_Right_Key_Light.png" id="3_y6t0a"]
+
+[node name="VirtualJoyPad" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Actions" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -67.0
+offset_top = -11.0
+offset_right = -67.0
+offset_bottom = -11.0
+grow_horizontal = 0
+grow_vertical = 0
+pivot_offset = Vector2(-1, -17)
+
+[node name="Jump" type="TouchScreenButton" parent="Actions"]
+position = Vector2(-20, -36)
+scale = Vector2(0.4, 0.4)
+texture_normal = ExtResource("1_svfd1")
+action = "jump"
+
+[node name="left" type="TouchScreenButton" parent="Actions"]
+position = Vector2(-56, -37)
+scale = Vector2(0.4, 0.4)
+texture_normal = ExtResource("2_ud4gb")
+action = "move_left"
+
+[node name="right" type="TouchScreenButton" parent="Actions"]
+position = Vector2(16, -37)
+scale = Vector2(0.4, 0.4)
+texture_normal = ExtResource("3_y6t0a")
+action = "move_right"

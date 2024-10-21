@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://cxl6nsmiu5l0t"]
+[gd_scene load_steps=10 format=3 uid="uid://cxl6nsmiu5l0t"]
 
 [ext_resource type="Script" path="res://scene/MainPlayer.cs" id="1_s8j65"]
 [ext_resource type="Texture2D" uid="uid://bs55ctil731g1" path="res://res/char_red_1.png" id="2_bdb5n"]
+[ext_resource type="PackedScene" uid="uid://dtp0bjryykpa" path="res://ui/virtual_joy_pad.tscn" id="3_m5vbn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_j2y5r"]
 size = Vector2(10, 29)
@@ -172,3 +173,7 @@ shape = SubResource("RectangleShape2D_j2y5r")
 libraries = {
 "": SubResource("AnimationLibrary_48n31")
 }
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="VirtualJoyPad" parent="CanvasLayer" instance=ExtResource("3_m5vbn")]
