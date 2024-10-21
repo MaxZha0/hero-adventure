@@ -9,9 +9,9 @@ public partial class World : Node2D
 	public override void _Ready()
 	{
 		mCamera = GetNode<Camera2D>("Player/Camera2D");
-		mMap = GetNode<TileMapLayer>("TileTrunk");
+		mMap = GetNode<TileMapLayer>("TileMap/TileTrunk");
 
-		Rect2I usedRect = mMap.GetUsedRect();
+		Rect2I usedRect = mMap.GetUsedRect().Grow(-1);
 		Vector2I tileSize = mMap.TileSet.TileSize;
 
 		// usedRect包含两点，坐上点与右下点，包含含义是格块，再乘以单个块的长度即可计算相机极限
