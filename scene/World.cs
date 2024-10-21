@@ -9,7 +9,7 @@ public partial class World : Node2D
 	public override void _Ready()
 	{
 		mCamera = GetNode<Camera2D>("Player/Camera2D");
-		mMap = GetNode<TileMapLayer>("TileMapLayer");
+		mMap = GetNode<TileMapLayer>("TileTrunk");
 
 		Rect2I usedRect = mMap.GetUsedRect();
 		Vector2I tileSize = mMap.TileSet.TileSize;
