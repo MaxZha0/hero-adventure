@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://dj1lwvg5ifpdu" path="res://res/Arrow_Right_Key_Light.png" id="3_y6t0a"]
 
 [node name="VirtualJoyPad" type="Control"]
+z_index = 5
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,6 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Actions" type="Control" parent="."]
+z_index = 5
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
