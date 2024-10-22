@@ -1,9 +1,7 @@
 using Godot;
 using System;
 
-// public partial class StateMechine
-
-public partial class StateMechine : Node
+public partial class Interactable : Node
 {
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
