@@ -30,19 +30,19 @@ grow_vertical = 0
 pivot_offset = Vector2(-1, -17)
 
 [node name="Jump" type="TouchScreenButton" parent="Actions"]
-position = Vector2(-304, -21)
-scale = Vector2(0.3, 0.3)
+position = Vector2(-308, -31)
+scale = Vector2(0.4, 0.4)
 texture_normal = ExtResource("1_svfd1")
 action = "jump"
 
 [node name="left" type="TouchScreenButton" parent="Actions"]
-position = Vector2(-13, -21)
-scale = Vector2(0.3, 0.3)
+position = Vector2(-24, -31)
+scale = Vector2(0.4, 0.4)
 texture_normal = ExtResource("2_ud4gb")
 action = "move_left"
 
 [node name="right" type="TouchScreenButton" parent="Actions"]
-position = Vector2(17, -21)
-scale = Vector2(0.3, 0.3)
+position = Vector2(16, -31)
+scale = Vector2(0.4, 0.4)
 texture_normal = ExtResource("3_y6t0a")
 action = "move_right"
