@@ -5,7 +5,7 @@ public partial class StateMachine : Node
 {
     // 当前状态为了和已有状态产生区别，定义为-1
     private int mCurrentState = -1;
-    private float mStateTime;
+    public float mStateTime;
     private MainPlayer mPlayer;
 
     // 本质上是个getter和setter的集合体
@@ -43,5 +43,6 @@ public partial class StateMachine : Node
         }
         // 这里状态机的_PhysicsProcess循环代替了Player的循环
         mPlayer.TickPhysics((State)mCurrentState, (float)delta);
+        mStateTime += (float)delta;
     }
 }

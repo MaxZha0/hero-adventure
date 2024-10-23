@@ -9,6 +9,8 @@ public enum State
 	JUMP,
 	FALL,
 	LANDING,
+	WALL_SLIDING,
+	WALL_JUMP,
 }
 
 public partial class MainPlayer : CharacterBody2D
@@ -18,6 +20,8 @@ public partial class MainPlayer : CharacterBody2D
 
 	// 起跳的反向速度
 	private static readonly float JUMP_VELOCITY = -310.0f;
+
+	private static Vector2 WALL_JUMP_VELOCITY = new(1000, -310);
 
 	// 地板上的加速度（摩擦力）
 	private static readonly float FLOOR_ACCELERATION = SPEED / 0.1f;
@@ -40,7 +44,13 @@ public partial class MainPlayer : CharacterBody2D
 	// 落地起跳缓存时间
 	private Timer jumpBufferTimer;
 	// 是否是改变状态后的第一帧
-	private bool mIsFirstTick = false;
+	private bool isFirstTick = false;
+	// 爬墙脚部监测点
+	private RayCast2D footCheck;
+	// 爬墙手部监测点
+	private RayCast2D handCheck;
+
+	private StateMachine stateMachine;
 
 	public override void _Ready()
 	{
@@ -49,6 +59,9 @@ public partial class MainPlayer : CharacterBody2D
 		sprite2D = GetNode<Sprite2D>("Sprite2D");
 		coyoteTimer = GetNode<Timer>("CoyoteTimer");
 		jumpBufferTimer = GetNode<Timer>("JumpBufferTimer");
+		footCheck = GetNode<RayCast2D>("Sprite2D/footCheck");
+		handCheck = GetNode<RayCast2D>("Sprite2D/handCheck");
+		stateMachine = GetNode<StateMachine>("StateMachine");
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -136,11 +149,39 @@ public partial class MainPlayer : CharacterBody2D
 						return State.RUNNING;
 					}
 				}
+				else if (IsOnWall() && handCheck.IsColliding() && footCheck.IsColliding())
+				{ // 如果在墙上，同时手脚监测点都触碰，则进入爬墙态
+					return State.WALL_SLIDING;
+				}
 				break;
 			case State.LANDING:
+				if (!isStill)
+				{
+					return State.RUNNING;// 着陆时可以直接进入RUNNING
+				}
 				if (!animPlayer.IsPlaying())// 着陆动画播放完则转为IDLE
 				{
 					return State.IDLE;
+				}
+				break;
+			case State.WALL_SLIDING:
+				if (jumpBufferTimer.TimeLeft > 0)
+				{
+					return State.WALL_JUMP; // 在墙上滑行时按下跳跃
+				}
+				if (IsOnFloor())
+				{
+					return State.IDLE;
+				}
+				if (!IsOnWall())
+				{
+					return State.FALL;
+				}
+				break;
+			case State.WALL_JUMP:
+				if (velocity.Y >= 0) // 纵向速度为正,转为FALL(与跳跃相同)
+				{
+					return State.FALL;
 				}
 				break;
 		}
@@ -184,14 +225,38 @@ public partial class MainPlayer : CharacterBody2D
 			case State.LANDING:
 				animPlayer.Play("landing");
 				break;
+			case State.WALL_SLIDING:
+				SetVelocityY(0);
+				animPlayer.Play("wall_sliding");
+				break;
+			case State.WALL_JUMP:// 类似跳跃
+				animPlayer.Play("jump");
+				Vector2 velocity = Velocity;
+				velocity = WALL_JUMP_VELOCITY; // x和y方向都有值的向量
+				velocity.X *= GetWallNormal().X; // 根据墙的方向改变跳跃方向
+				Velocity = velocity;
+				// 实际起跳后停止起跳缓冲计时器
+				jumpBufferTimer.Stop();
+				break;
+		}
+
+		if (to == State.JUMP)
+		{
+			// animPlayer.SpeedScale = 0.3f;
+		}
+		if (from == State.JUMP)
+		{
+			animPlayer.SpeedScale = 1.0f;
 		}
 		// 代表状态切换以后的第一帧，为了处理竖向加速度
-		mIsFirstTick = true;
+		isFirstTick = true;
 	}
 
 	// 代替原有的_PhysicsProcess,被状态机调用
 	public void TickPhysics(State state, float delta)
 	{
+		// 跳跃第一帧不考虑加速度
+		Vector2 targetGravity = isFirstTick ? new Vector2(0, 0) : GetGravity();
 		switch (state)
 		{
 			case State.IDLE:
@@ -201,18 +266,30 @@ public partial class MainPlayer : CharacterBody2D
 				Move(GetGravity(), delta);
 				break;
 			case State.JUMP:
-				// 跳跃第一帧不考虑加速度
-				Vector2 targetGravity = mIsFirstTick ? new Vector2(0, 0) : GetGravity();
 				Move(targetGravity, delta);
 				break;
 			case State.FALL:
 				Move(GetGravity(), delta);
 				break;
 			case State.LANDING:
-				Stand(delta);
+				Stand(GetGravity(), delta);
+				break;
+			case State.WALL_SLIDING:
+				Move(GetGravity() / 6, delta);
+				break;
+			case State.WALL_JUMP:
+				if (stateMachine.mStateTime < 0.1)
+				{
+					Stand(targetGravity, delta);
+				}
+				else
+				{ // 肯定不是第一帧，跳跃正常重力即可
+					Move(GetGravity(), delta);
+				}
+
 				break;
 		}
-		mIsFirstTick = false;
+		isFirstTick = false;
 	}
 
 	// 移动方法
@@ -232,7 +309,35 @@ public partial class MainPlayer : CharacterBody2D
 		// 镜像切换动画方向
 		if (!direction.IsZeroApprox())
 		{
-			sprite2D.FlipH = direction.X < 0;
+			Vector2 scale = sprite2D.Scale;
+			scale.X = direction.X;
+			sprite2D.Scale = scale;
+		}
+		Velocity = velocity;
+		// 执行移动
+		MoveAndSlide();
+	}
+
+	// 移动方法
+	public void Sliding(Vector2 gravity, float delta)
+	{
+		Vector2 velocity = Velocity;
+		Vector2 direction = Input.GetVector("move_left", "move_right", "ui_up", "ui_down");
+
+		// X分量目标速度
+		float targetVelocity = direction.X * SPEED;
+		// 地上添加摩擦力（起跑和减速），空中不添加（加速度很大），空中转身迅速
+		float acceleration = IsOnFloor() ? FLOOR_ACCELERATION : AIR_ACCELERATION;
+		// X分量实际速度
+		velocity.X = Mathf.MoveToward(velocity.X, targetVelocity, acceleration * (float)delta);
+		// Y分量持续添加重力加速度
+		velocity.Y += gravity.Y * (float)delta;
+		// 镜像切换动画方向
+		if (!direction.IsZeroApprox())
+		{
+			Vector2 scale = sprite2D.Scale;
+			scale.X = direction.X;
+			sprite2D.Scale = scale;
 		}
 		Velocity = velocity;
 		// 执行移动
@@ -240,7 +345,7 @@ public partial class MainPlayer : CharacterBody2D
 	}
 
 	// 站立方法
-	public void Stand(float delta)
+	public void Stand(Vector2 gravity, float delta)
 	{
 		Vector2 velocity = Velocity;
 		// 地上添加摩擦力（起跑和减速），空中不添加（加速度很大），空中转身迅速
@@ -248,7 +353,7 @@ public partial class MainPlayer : CharacterBody2D
 		// X分量 速度降到0
 		velocity.X = Mathf.MoveToward(velocity.X, 0, acceleration * (float)delta);
 		// Y分量持续添加重力加速度
-		velocity.Y += GetGravity().Y * (float)delta;
+		velocity.Y += gravity.Y * (float)delta;
 		Velocity = velocity;
 		// 执行移动
 		MoveAndSlide();
