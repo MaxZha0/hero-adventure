@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 
 public enum State
 {
@@ -11,8 +12,10 @@ public enum State
 
 public partial class MainPlayer : CharacterBody2D
 {
+	// 移动速度
 	private static readonly float SPEED = 150.0f;
 
+	// 起跳的反向速度
 	private static readonly float JUMP_VELOCITY = -310.0f;
 
 	// 地板上的加速度（摩擦力）
@@ -21,6 +24,7 @@ public partial class MainPlayer : CharacterBody2D
 	// 空中的加速度（翻身跳）
 	private static readonly float AIR_ACCELERATION = SPEED / 0.02f;
 
+	// 集合，代表处于地面的状态
 	private static readonly State[] GROUND_STATES = new State[]
 	{
 		State.IDLE,
@@ -33,6 +37,8 @@ public partial class MainPlayer : CharacterBody2D
 	private Timer coyoteTimer;
 	// 落地起跳缓存时间
 	private Timer jumpBufferTimer;
+	// 是否是改变状态后的第一帧
+	private bool mIsFirstTick = false;
 
 	public override void _Ready()
 	{
@@ -59,95 +65,22 @@ public partial class MainPlayer : CharacterBody2D
 			// 如果松开起跳键时速度还大于起跳速度的一半，则直接降低速度，起到大小跳的区别
 			if (Velocity.Y < JUMP_VELOCITY / 2)
 			{
-				Vector2 velocity = Velocity;
-				velocity.Y = JUMP_VELOCITY / 2;
-				Velocity = velocity;
+				SetVelocityY(JUMP_VELOCITY / 2);
 			}
 		}
 	}
 
+	// 改变纵向速度的方法
+	public void SetVelocityY(float speed)
+	{
+		Vector2 velocity = Velocity;
+		velocity.Y = speed;
+		Velocity = velocity;
+	}
 
-	// public override void _PhysicsProcess(double delta)
-	// {
-	// 	Vector2 velocity = Velocity;
-	// 	Vector2 direction = Input.GetVector("move_left", "move_right", "ui_up", "ui_down");
-
-	// 	// X分量目标速度
-	// 	float targetVelocity = direction.X * SPEED;
-	// 	// 地上添加摩擦力（起跑和减速），空中不添加（加速度很大），空中转身迅速
-	// 	float acceleration = IsOnFloor() ? FLOOR_ACCELERATION : AIR_ACCELERATION;
-	// 	// X分量实际速度
-	// 	velocity.X = Mathf.MoveToward(velocity.X, targetVelocity, FLOOR_ACCELERATION * (float)delta);
-
-	// 	// Y分量持续添加重力加速度
-	// 	velocity.Y += GetGravity().Y * (float)delta;
-	// 	// 起跳条件：在地板上 或者 处于郊狼时间
-	// 	bool canJump = IsOnFloor() || coyoteTimer.TimeLeft > 0;
-	// 	// 如果能起跳，并且在起跳缓冲内，则允许起跳
-	// 	bool shouldJump = canJump && jumpBufferTimer.TimeLeft > 0;
-	// 	// 如果起跳成功，Y分量添加反方向速度
-	// 	if (shouldJump)
-	// 	{
-	// 		velocity.Y = JUMP_VELOCITY;
-	// 		// 实际起跳后停止郊狼时间计时器
-	// 		coyoteTimer.Stop();
-	// 		// 实际起跳后停止起跳缓冲计时器
-	// 		jumpBufferTimer.Stop();
-	// 	}
-	// 	Velocity = velocity;
-
-	// 	// 移动前是否在地板上
-	// 	bool wasOnFloor = IsOnFloor();
-	// 	// 执行移动
-	// 	MoveAndSlide();
-	// 	// 移动后如果地板状态改变，说明发生了跳跃或者坠落
-	// 	if (IsOnFloor() != wasOnFloor)
-	// 	{
-	// 		// 如果不在地板同时不是主动起跳，则开始计时
-	// 		if (!IsOnFloor() && !shouldJump)
-	// 		{
-	// 			coyoteTimer.Start();
-	// 		}
-	// 		else
-	// 		{
-	// 			coyoteTimer.Stop();
-	// 		}
-	// 	}
-
-
-	// 	// 播放动画
-	// 	if (IsOnFloor())
-	// 	{
-	// 		// 播放IDLE动画：无按键并且X速度为0
-	// 		if (direction.IsZeroApprox() && velocity.X.Equals(0))
-	// 		{
-	// 			animPlayer.Play("idle");
-	// 		}
-	// 		else
-	// 		{
-	// 			animPlayer.Play("running");
-	// 		}
-	// 	}
-	// 	else if (velocity.Y < 0)
-	// 	{
-	// 		animPlayer.Play("jump");
-	// 	}
-	// 	else
-	// 	{
-	// 		animPlayer.Play("fall");
-	// 	}
-
-	// 	// 镜像切换动画方向
-	// 	if (!direction.IsZeroApprox())
-	// 	{
-	// 		sprite2D.FlipH = direction.X < 0;
-	// 	}
-	// }
-
-
+	// 根据当前人物状态，获取可能的状态改变值
 	public State GetNextState(State stateValue)
 	{
-		// GD.Print("GetNextState");
 		// 起跳条件：在地板上 或者 处于郊狼时间
 		bool canJump = IsOnFloor() || coyoteTimer.TimeLeft > 0;
 		// 如果能起跳，并且在起跳缓冲内，则允许起跳
@@ -156,7 +89,6 @@ public partial class MainPlayer : CharacterBody2D
 		{
 			return State.JUMP;
 		}
-
 		Vector2 velocity = Velocity;
 		Vector2 direction = Input.GetVector("move_left", "move_right", "ui_up", "ui_down");
 		// IDLE状态：无按键并且X速度为0
@@ -165,27 +97,27 @@ public partial class MainPlayer : CharacterBody2D
 		switch (state)
 		{
 			case State.IDLE:
-				if (!IsOnFloor())
+				if (!IsOnFloor()) // 不在地板上转为FALL
 				{
 					return State.FALL;
 				}
-				if (!isStill)
+				if (!isStill) // 不静止转为RUNNING
 				{
 					return State.RUNNING;
 				}
 				break;
 			case State.RUNNING:
-				if (!IsOnFloor())
+				if (!IsOnFloor()) // 不在地板上转为FALL
 				{
 					return State.FALL;
 				}
-				if (isStill)
+				if (isStill) // 静止了转为IDLE
 				{
 					return State.IDLE;
 				}
 				break;
 			case State.JUMP:
-				if (velocity.Y >= 0)
+				if (velocity.Y >= 0) // 纵向速度为正,转为FALL
 				{
 					return State.FALL;
 				}
@@ -193,11 +125,11 @@ public partial class MainPlayer : CharacterBody2D
 			case State.FALL:
 				if (IsOnFloor())
 				{
-					if (isStill)
+					if (isStill) // 在地板上静止转为IDLE
 					{
 						return State.IDLE;
 					}
-					else
+					else // 在地板上移动转为RUNNING
 					{
 						return State.RUNNING;
 					}
@@ -208,12 +140,12 @@ public partial class MainPlayer : CharacterBody2D
 		return state;
 	}
 
+	// 改变状态需要做的事情
 	public void TransitionState(State from, State to)
 	{
-		GD.Print("TransitionState");
-		Vector2 velocity = Velocity;
-		// from不在地上但是to在
-		if (!Enum.IsDefined(typeof(State), from) && Enum.IsDefined(typeof(State), to))
+		GD.Print("TransitionState " + from + " to " + to);
+		// 移动前在天上,移动后在地上,停止郊狼计数
+		if (!GROUND_STATES.Contains(from) && GROUND_STATES.Contains(to))
 		{
 			coyoteTimer.Stop();
 		}
@@ -228,43 +160,48 @@ public partial class MainPlayer : CharacterBody2D
 				break;
 			case State.JUMP:
 				animPlayer.Play("jump");
-				velocity.Y = JUMP_VELOCITY;
+				SetVelocityY(JUMP_VELOCITY);
 				// 实际起跳后停止郊狼时间计时器
 				coyoteTimer.Stop();
+				GD.Print("jump停止coyote");
 				// 实际起跳后停止起跳缓冲计时器
 				jumpBufferTimer.Stop();
 				break;
 			case State.FALL:
 				animPlayer.Play("fall");
-				if (Enum.IsDefined(typeof(State), from))
+				if (GROUND_STATES.Contains(from)) // 如果是从地面转到FALL的话,开始郊狼时间计数
 				{
 					coyoteTimer.Start();
 				}
 				break;
 		}
+		// 代表状态切换以后的第一帧，为了处理竖向加速度
+		mIsFirstTick = true;
 	}
 
 	public void TickPhysics(State state, float delta)
 	{
-		GD.Print("TickPhysics " + state);
 		switch (state)
 		{
 			case State.IDLE:
-				Move(delta);
+				Move(GetGravity(), delta);
 				break;
 			case State.RUNNING:
-				Move(delta);
+				Move(GetGravity(), delta);
 				break;
 			case State.JUMP:
-				Move(delta);
+				// 跳跃第一帧不考虑加速度
+				Vector2 targetGravity = mIsFirstTick ? new Vector2(0, 0) : GetGravity();
+				Move(targetGravity, delta);
 				break;
 			case State.FALL:
-				Move(delta);
+				Move(GetGravity(), delta);
 				break;
 		}
+		mIsFirstTick = false;
 	}
 
-	public void Move(float delta)
+	public void Move(Vector2 gravity, float delta)
 	{
 		Vector2 velocity = Velocity;
 		Vector2 direction = Input.GetVector("move_left", "move_right", "ui_up", "ui_down");
@@ -274,10 +211,10 @@ public partial class MainPlayer : CharacterBody2D
 		// 地上添加摩擦力（起跑和减速），空中不添加（加速度很大），空中转身迅速
 		float acceleration = IsOnFloor() ? FLOOR_ACCELERATION : AIR_ACCELERATION;
 		// X分量实际速度
-		velocity.X = Mathf.MoveToward(velocity.X, targetVelocity, FLOOR_ACCELERATION * (float)delta);
+		velocity.X = Mathf.MoveToward(velocity.X, targetVelocity, acceleration * (float)delta);
 
 		// Y分量持续添加重力加速度
-		velocity.Y += GetGravity().Y * (float)delta;
+		velocity.Y += gravity.Y * (float)delta;
 
 		// 镜像切换动画方向
 		if (!direction.IsZeroApprox())

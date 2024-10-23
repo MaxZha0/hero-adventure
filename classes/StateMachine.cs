@@ -30,7 +30,6 @@ public partial class StateMachine : Node
 		mPlayer = (MainPlayer)GetParent();
 		mPlayer._Ready();
 		this.CurrentState = 0;
-
 	}
 
 
@@ -38,18 +37,13 @@ public partial class StateMachine : Node
 	{
 		while (true)
 		{
-			GD.Print("mCurrentState" + mCurrentState);
 			int nextState = (int)mPlayer.GetNextState((State)mCurrentState);
-			GD.Print("nextState" + nextState);
 			if (mCurrentState == nextState)
 			{
-				GD.Print(" == ");
 				break;
 			}
-
 			this.CurrentState = nextState;
-
-			mPlayer.TickPhysics((State)mCurrentState, (float)delta);
 		}
+			mPlayer.TickPhysics((State)mCurrentState, (float)delta);
 	}
 }
