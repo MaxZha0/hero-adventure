@@ -163,7 +163,6 @@ public partial class MainPlayer : CharacterBody2D
 				SetVelocityY(JUMP_VELOCITY);
 				// 实际起跳后停止郊狼时间计时器
 				coyoteTimer.Stop();
-				GD.Print("jump停止coyote");
 				// 实际起跳后停止起跳缓冲计时器
 				jumpBufferTimer.Stop();
 				break;
@@ -179,6 +178,7 @@ public partial class MainPlayer : CharacterBody2D
 		mIsFirstTick = true;
 	}
 
+	// 代替原有的_PhysicsProcess,被状态机调用
 	public void TickPhysics(State state, float delta)
 	{
 		switch (state)
@@ -201,6 +201,7 @@ public partial class MainPlayer : CharacterBody2D
 		mIsFirstTick = false;
 	}
 
+	// 移动方法
 	public void Move(Vector2 gravity, float delta)
 	{
 		Vector2 velocity = Velocity;

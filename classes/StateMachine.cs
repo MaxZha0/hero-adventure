@@ -4,13 +4,12 @@ using System;
 
 public partial class StateMachine : Node
 {
-	public static int KEEP_CURRENT = -1;
-
-	private int mCurrentState = KEEP_CURRENT;
+	// 当前状态为了和已有状态产生区别，定义为-1
+	private int mCurrentState = -1;
 	private float mStateTime;
+	private MainPlayer mPlayer;
 
-	MainPlayer mPlayer;
-
+	// 本质上是个getter和setter的集合体
 	public int CurrentState
 	{
 		get => mCurrentState;
@@ -23,13 +22,13 @@ public partial class StateMachine : Node
 		}
 	}
 
-
-
 	public override void _Ready()
 	{
+		// 找到父节点，先让父节点初始化
 		mPlayer = (MainPlayer)GetParent();
 		mPlayer._Ready();
-		this.CurrentState = 0;
+		// 初始化为IDLE状态
+		CurrentState = 0;
 	}
 
 
@@ -37,13 +36,15 @@ public partial class StateMachine : Node
 	{
 		while (true)
 		{
+			// 获取下一个状态
 			int nextState = (int)mPlayer.GetNextState((State)mCurrentState);
-			if (mCurrentState == nextState)
+			if (mCurrentState == nextState) // 直到状态确定才退出
 			{
 				break;
 			}
-			this.CurrentState = nextState;
+			CurrentState = nextState; // 这里setter方法有额外逻辑(TransitionState)
 		}
-			mPlayer.TickPhysics((State)mCurrentState, (float)delta);
+		// 这里状态机的_PhysicsProcess循环代替了Player的循环
+		mPlayer.TickPhysics((State)mCurrentState, (float)delta);
 	}
 }
