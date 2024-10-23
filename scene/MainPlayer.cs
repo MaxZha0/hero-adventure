@@ -4,10 +4,11 @@ using System.Linq;
 
 public enum State
 {
-	IDLE = 0,
-	RUNNING = 1,
-	JUMP = 2,
-	FALL = 3,
+	IDLE,
+	RUNNING,
+	JUMP,
+	FALL,
+	LANDING,
 }
 
 public partial class MainPlayer : CharacterBody2D
@@ -29,6 +30,7 @@ public partial class MainPlayer : CharacterBody2D
 	{
 		State.IDLE,
 		State.RUNNING,
+		State.LANDING,
 	};
 
 	private AnimationPlayer animPlayer;
@@ -125,14 +127,20 @@ public partial class MainPlayer : CharacterBody2D
 			case State.FALL:
 				if (IsOnFloor())
 				{
-					if (isStill) // 在地板上静止转为IDLE
+					if (isStill) // 在地板上静止转为LANDING
 					{
-						return State.IDLE;
+						return State.LANDING;
 					}
-					else // 在地板上移动转为RUNNING
+					else // 在地板上移动则直接转为RUNNING
 					{
 						return State.RUNNING;
 					}
+				}
+				break;
+			case State.LANDING:
+				if (!animPlayer.IsPlaying())// 着陆动画播放完则转为IDLE
+				{
+					return State.IDLE;
 				}
 				break;
 		}
@@ -173,6 +181,9 @@ public partial class MainPlayer : CharacterBody2D
 					coyoteTimer.Start();
 				}
 				break;
+			case State.LANDING:
+				animPlayer.Play("landing");
+				break;
 		}
 		// 代表状态切换以后的第一帧，为了处理竖向加速度
 		mIsFirstTick = true;
@@ -197,6 +208,9 @@ public partial class MainPlayer : CharacterBody2D
 			case State.FALL:
 				Move(GetGravity(), delta);
 				break;
+			case State.LANDING:
+				Stand(delta);
+				break;
 		}
 		mIsFirstTick = false;
 	}
@@ -213,10 +227,8 @@ public partial class MainPlayer : CharacterBody2D
 		float acceleration = IsOnFloor() ? FLOOR_ACCELERATION : AIR_ACCELERATION;
 		// X分量实际速度
 		velocity.X = Mathf.MoveToward(velocity.X, targetVelocity, acceleration * (float)delta);
-
 		// Y分量持续添加重力加速度
 		velocity.Y += gravity.Y * (float)delta;
-
 		// 镜像切换动画方向
 		if (!direction.IsZeroApprox())
 		{
@@ -226,21 +238,19 @@ public partial class MainPlayer : CharacterBody2D
 		// 执行移动
 		MoveAndSlide();
 	}
+
+	// 站立方法
+	public void Stand(float delta)
+	{
+		Vector2 velocity = Velocity;
+		// 地上添加摩擦力（起跑和减速），空中不添加（加速度很大），空中转身迅速
+		float acceleration = IsOnFloor() ? FLOOR_ACCELERATION : AIR_ACCELERATION;
+		// X分量 速度降到0
+		velocity.X = Mathf.MoveToward(velocity.X, 0, acceleration * (float)delta);
+		// Y分量持续添加重力加速度
+		velocity.Y += GetGravity().Y * (float)delta;
+		Velocity = velocity;
+		// 执行移动
+		MoveAndSlide();
+	}
 }
-
-
-// switch (to)
-// {
-// 	case State.IDLE:
-
-// 		break;
-// 	case State.RUNNING:
-
-// 		break;
-// 	case State.JUMP:
-
-// 		break;
-// 	case State.FALL:
-
-// 		break;
-// }
