@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=4 uid="uid://bmoj03imnjj67"]
+[gd_scene load_steps=8 format=4 uid="uid://bmoj03imnjj67"]
 
 [ext_resource type="Script" path="res://scene/World.cs" id="1_be5e5"]
 [ext_resource type="PackedScene" uid="uid://cxl6nsmiu5l0t" path="res://scene/player.tscn" id="2_1nxgk"]
 [ext_resource type="TileSet" uid="uid://lqe2k7y8mni2" path="res://map/mapTiles.tres" id="2_j4i4e"]
 [ext_resource type="Texture2D" uid="uid://dnrd0yx8rg23g" path="res://res/Background.png" id="2_x1our"]
 [ext_resource type="Texture2D" uid="uid://dofvjc32vhkuc" path="res://res/BackgroundTree.png" id="3_m4imx"]
+[ext_resource type="PackedScene" uid="uid://dxa50oheq6e4w" path="res://scene/boar.tscn" id="5_iv3ha"]
 [ext_resource type="Texture2D" uid="uid://cayrac6wolrp4" path="res://res/Tree-Assets.png" id="6_pguiu"]
 
 [node name="World" type="Node2D"]
@@ -67,8 +68,14 @@ tile_set = ExtResource("2_j4i4e")
 tile_map_data = PackedByteArray("AAArAAUAAAAKAAIAAAAtAAUAAAAIAAIAAAAvAAUAAAAJAAMAAABDAPb/AAAIAAIAAABEAPb/AAAJAAIAAABHAPb/AAAGAAMAAABNAPb/AAAIAAMAAAAGAPT/AAAHAAMAAAAJAPT/AAAIAAMAAAATAPT/AAAGAAMAAAAVAPT/AAAKAAIAAAAPAA0AAAAGAAMAAAATAA0AAAAJAAMAAAAWAA0AAAAGAAMAAAAIAAsAAAAJAAIAAABAAP//AAAKAAIAAABDAP//AAAJAAIAAABGAP//AAAHAAMAAABOAA0AAAAIAAIAAABQAA0AAAAGAAMAAABhAAoAAAAJAAMAAABdAPP/AAAHAAMAAABcAPP/AAAJAAMAAABaAPP/AAAIAAIAAAA=")
 tile_set = ExtResource("2_j4i4e")
 
+[node name="Boar" parent="." instance=ExtResource("5_iv3ha")]
+position = Vector2(456, 164)
+
+[node name="Boar2" parent="." instance=ExtResource("5_iv3ha")]
+position = Vector2(732, 74)
+
 [node name="Player" parent="." instance=ExtResource("2_1nxgk")]
-position = Vector2(66, 152)
+position = Vector2(617, 120)
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2(0, -14)

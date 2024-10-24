@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://dgbscxcnpigt8"]
+
+[ext_resource type="Script" path="res://classes/StateMachine.cs" id="1_frnk8"]
+[ext_resource type="Script" path="res://scene/Enemy.cs" id="1_fx4we"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_r4icy"]
+height = 22.0
+
+[node name="Enemy" type="CharacterBody2D"]
+collision_layer = 4
+script = ExtResource("1_fx4we")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="Collision2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_r4icy")
+
+[node name="AnimPlayer" type="AnimationPlayer" parent="."]
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("1_frnk8")

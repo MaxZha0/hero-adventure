@@ -2,19 +2,18 @@ using Godot;
 using System;
 using System.Linq;
 
-public enum State
+public partial class MainPlayer : Entity
 {
-	IDLE,
-	RUNNING,
-	JUMP,
-	FALL,
-	LANDING,
-	WALL_SLIDING,
-	WALL_JUMP,
-}
-
-public partial class MainPlayer : CharacterBody2D
-{
+	public enum State
+	{
+		IDLE,
+		RUNNING,
+		JUMP,
+		FALL,
+		LANDING,
+		WALL_SLIDING,
+		WALL_JUMP,
+	}
 	// 移动速度
 	private static readonly float SPEED = 150.0f;
 
@@ -94,47 +93,47 @@ public partial class MainPlayer : CharacterBody2D
 	}
 
 	// 根据当前人物状态，获取可能的状态改变值
-	public State GetNextState(State stateValue)
+	public override int GetNextState(int stateValue)
 	{
+		State state = (State)stateValue;
 		// 起跳条件：在地板上 或者 处于郊狼时间
 		bool canJump = IsOnFloor() || coyoteTimer.TimeLeft > 0;
 		// 如果能起跳，并且在起跳缓冲内，则允许起跳
 		bool shouldJump = canJump && jumpBufferTimer.TimeLeft > 0;
 		if (shouldJump)
 		{
-			return State.JUMP;
+			return (int)State.JUMP;
 		}
 		Vector2 velocity = Velocity;
 		Vector2 direction = Input.GetVector("move_left", "move_right", "ui_up", "ui_down");
 		// IDLE状态：无按键并且X速度为0
 		bool isStill = direction.IsZeroApprox() && velocity.X.Equals(0);
-		State state = stateValue;
 		switch (state)
 		{
 			case State.IDLE:
 				if (!IsOnFloor()) // 不在地板上转为FALL
 				{
-					return State.FALL;
+					return (int)State.FALL;
 				}
 				if (!isStill) // 不静止转为RUNNING
 				{
-					return State.RUNNING;
+					return (int)State.RUNNING;
 				}
 				break;
 			case State.RUNNING:
 				if (!IsOnFloor()) // 不在地板上转为FALL
 				{
-					return State.FALL;
+					return (int)State.FALL;
 				}
 				if (isStill) // 静止了转为IDLE
 				{
-					return State.IDLE;
+					return (int)State.IDLE;
 				}
 				break;
 			case State.JUMP:
 				if (velocity.Y >= 0) // 纵向速度为正,转为FALL
 				{
-					return State.FALL;
+					return (int)State.FALL;
 				}
 				break;
 			case State.FALL:
@@ -142,40 +141,40 @@ public partial class MainPlayer : CharacterBody2D
 				{
 					if (isStill) // 在地板上静止转为LANDING
 					{
-						return State.LANDING;
+						return (int)State.LANDING;
 					}
 					else // 在地板上移动则直接转为RUNNING
 					{
-						return State.RUNNING;
+						return (int)State.RUNNING;
 					}
 				}
 				else if (IsOnWall() && handCheck.IsColliding() && footCheck.IsColliding())
 				{ // 如果在墙上，同时手脚监测点都触碰，则进入爬墙态
-					return State.WALL_SLIDING;
+					return (int)State.WALL_SLIDING;
 				}
 				break;
 			case State.LANDING:
 				if (!isStill)
 				{
-					return State.RUNNING;// 着陆时可以直接进入RUNNING
+					return (int)State.RUNNING;// 着陆时可以直接进入RUNNING
 				}
 				if (!animPlayer.IsPlaying())// 着陆动画播放完则转为IDLE
 				{
-					return State.IDLE;
+					return (int)State.IDLE;
 				}
 				break;
 			case State.WALL_SLIDING:
 				if (jumpBufferTimer.TimeLeft > 0)
 				{
-					return State.WALL_JUMP; // 在墙上滑行时按下跳跃
+					return (int)State.WALL_JUMP; // 在墙上滑行时按下跳跃
 				}
 				if (IsOnFloor())
 				{
-					return State.IDLE;
+					return (int)State.IDLE;
 				}
 				if (!footCheck.IsColliding())
 				{
-					return State.FALL; // 脚没踩住墙，从墙上掉落时，恢复FALL
+					return (int)State.FALL; // 脚没踩住墙，从墙上掉落时，恢复FALL
 				}
 				// if (!IsOnWall())
 				// {
@@ -186,18 +185,20 @@ public partial class MainPlayer : CharacterBody2D
 			case State.WALL_JUMP:
 				if (velocity.Y >= 0) // 纵向速度为正,转为FALL(与跳跃相同)
 				{
-					return State.FALL;
+					return (int)State.FALL;
 				}
 				break;
 		}
 
-		return state;
+		return stateValue;
 	}
 
 	// 改变状态需要做的事情
-	public void TransitionState(State from, State to)
+	public override void TransitionState(int fromValue, int toValue)
 	{
-		GD.Print("TransitionState " + from + " to " + to);
+		State from = (State)fromValue;
+		State to = (State)toValue;
+		// GD.Print("TransitionState " + from + " to " + to);
 		// 移动前在天上,移动后在地上,停止郊狼计数
 		if (!GROUND_STATES.Contains(from) && GROUND_STATES.Contains(to))
 		{
@@ -248,8 +249,9 @@ public partial class MainPlayer : CharacterBody2D
 	}
 
 	// 代替原有的_PhysicsProcess,被状态机调用
-	public void TickPhysics(State state, float delta)
+	public override void TickPhysics(int stateValue, float delta)
 	{
+		State state = (State)stateValue;
 		// 跳跃第一帧不考虑加速度
 		Vector2 targetGravity = isFirstTick ? new Vector2(0, 0) : GetGravity();
 		switch (state)
@@ -276,15 +278,6 @@ public partial class MainPlayer : CharacterBody2D
 			case State.WALL_JUMP:
 				// 肯定不是第一帧，跳跃正常重力即可
 				Move(GetGravity(), delta);
-				// if (stateMachine.mStateTime < 0.1)
-				// {
-				// 	Stand(targetGravity, delta);
-				// }
-				// else
-				// { // 肯定不是第一帧，跳跃正常重力即可
-				// 	Move(GetGravity(), delta);
-				// }
-
 				break;
 		}
 		isFirstTick = false;

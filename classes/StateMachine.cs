@@ -1,12 +1,13 @@
 using System;
 using Godot;
 
+
 public partial class StateMachine : Node
 {
+    public float mStateTime;
     // 当前状态为了和已有状态产生区别，定义为-1
     private int mCurrentState = -1;
-    public float mStateTime;
-    private MainPlayer mPlayer;
+    private Entity mPlayer;
 
     // 本质上是个getter和setter的集合体
     public int CurrentState
@@ -15,7 +16,7 @@ public partial class StateMachine : Node
         set
         {
             // 调用TransitionState方法来处理状态转换
-            mPlayer.TransitionState((State)mCurrentState, (State)value);
+            mPlayer.TransitionState(mCurrentState, value);
             mCurrentState = value;
             mStateTime = 0.0f; // 重置状态时间
         }
@@ -24,7 +25,7 @@ public partial class StateMachine : Node
     public override void _Ready()
     {
         // 找到父节点，先让父节点初始化
-        mPlayer = (MainPlayer)GetParent();
+        mPlayer = (Entity)GetParent();
         mPlayer._Ready();
         CurrentState = 0; // 初始化为IDLE状态
     }
@@ -34,7 +35,7 @@ public partial class StateMachine : Node
         while (true)
         {
             // 获取下一个状态
-            int nextState = (int)mPlayer.GetNextState((State)mCurrentState);
+            int nextState = (int)mPlayer.GetNextState(mCurrentState);
             if (mCurrentState == nextState) // 直到状态确定才退出
             {
                 break;
@@ -42,7 +43,7 @@ public partial class StateMachine : Node
             CurrentState = nextState; // 这里setter方法有额外逻辑(TransitionState)
         }
         // 这里状态机的_PhysicsProcess循环代替了Player的循环
-        mPlayer.TickPhysics((State)mCurrentState, (float)delta);
+        mPlayer.TickPhysics(mCurrentState, (float)delta);
         mStateTime += (float)delta;
     }
 }
