@@ -21,13 +21,13 @@ public partial class MainPlayer : CharacterBody2D
 	// 起跳的反向速度
 	private static readonly float JUMP_VELOCITY = -310.0f;
 
-	private static Vector2 WALL_JUMP_VELOCITY = new(1000, -310);
+	private static Vector2 WALL_JUMP_VELOCITY = new(380, -280);
 
 	// 地板上的加速度（摩擦力）
 	private static readonly float FLOOR_ACCELERATION = SPEED / 0.1f;
 
 	// 空中的加速度（翻身跳）
-	private static readonly float AIR_ACCELERATION = SPEED / 0.02f;
+	private static readonly float AIR_ACCELERATION = SPEED / 0.1f;
 
 	// 集合，代表处于地面的状态
 	private static readonly State[] GROUND_STATES = new State[]
@@ -173,10 +173,15 @@ public partial class MainPlayer : CharacterBody2D
 				{
 					return State.IDLE;
 				}
-				if (!IsOnWall())
+				if (!footCheck.IsColliding())
 				{
-					return State.FALL;
+					return State.FALL; // 脚没踩住墙，从墙上掉落时，恢复FALL
 				}
+				// if (!IsOnWall())
+				// {
+				// 当前版本Godot有Bug，在右边墙上的时候，不能保持IsOnWall状态
+				// return State.FALL;
+				// }
 				break;
 			case State.WALL_JUMP:
 				if (velocity.Y >= 0) // 纵向速度为正,转为FALL(与跳跃相同)
@@ -231,22 +236,12 @@ public partial class MainPlayer : CharacterBody2D
 				break;
 			case State.WALL_JUMP:// 类似跳跃
 				animPlayer.Play("jump");
-				Vector2 velocity = Velocity;
-				velocity = WALL_JUMP_VELOCITY; // x和y方向都有值的向量
+				Vector2 velocity = WALL_JUMP_VELOCITY; // x和y方向都有值的向量
 				velocity.X *= GetWallNormal().X; // 根据墙的方向改变跳跃方向
 				Velocity = velocity;
 				// 实际起跳后停止起跳缓冲计时器
 				jumpBufferTimer.Stop();
 				break;
-		}
-
-		if (to == State.JUMP)
-		{
-			// animPlayer.SpeedScale = 0.3f;
-		}
-		if (from == State.JUMP)
-		{
-			animPlayer.SpeedScale = 1.0f;
 		}
 		// 代表状态切换以后的第一帧，为了处理竖向加速度
 		isFirstTick = true;
@@ -275,17 +270,20 @@ public partial class MainPlayer : CharacterBody2D
 				Stand(GetGravity(), delta);
 				break;
 			case State.WALL_SLIDING:
-				Move(GetGravity() / 6, delta);
+				// 滑墙状态不接受左右方向干扰
+				Stand(GetGravity() / 10, delta);
 				break;
 			case State.WALL_JUMP:
-				if (stateMachine.mStateTime < 0.1)
-				{
-					Stand(targetGravity, delta);
-				}
-				else
-				{ // 肯定不是第一帧，跳跃正常重力即可
-					Move(GetGravity(), delta);
-				}
+				// 肯定不是第一帧，跳跃正常重力即可
+				Move(GetGravity(), delta);
+				// if (stateMachine.mStateTime < 0.1)
+				// {
+				// 	Stand(targetGravity, delta);
+				// }
+				// else
+				// { // 肯定不是第一帧，跳跃正常重力即可
+				// 	Move(GetGravity(), delta);
+				// }
 
 				break;
 		}
@@ -318,33 +316,7 @@ public partial class MainPlayer : CharacterBody2D
 		MoveAndSlide();
 	}
 
-	// 移动方法
-	public void Sliding(Vector2 gravity, float delta)
-	{
-		Vector2 velocity = Velocity;
-		Vector2 direction = Input.GetVector("move_left", "move_right", "ui_up", "ui_down");
-
-		// X分量目标速度
-		float targetVelocity = direction.X * SPEED;
-		// 地上添加摩擦力（起跑和减速），空中不添加（加速度很大），空中转身迅速
-		float acceleration = IsOnFloor() ? FLOOR_ACCELERATION : AIR_ACCELERATION;
-		// X分量实际速度
-		velocity.X = Mathf.MoveToward(velocity.X, targetVelocity, acceleration * (float)delta);
-		// Y分量持续添加重力加速度
-		velocity.Y += gravity.Y * (float)delta;
-		// 镜像切换动画方向
-		if (!direction.IsZeroApprox())
-		{
-			Vector2 scale = sprite2D.Scale;
-			scale.X = direction.X;
-			sprite2D.Scale = scale;
-		}
-		Velocity = velocity;
-		// 执行移动
-		MoveAndSlide();
-	}
-
-	// 站立方法
+	// 站立方法 在墙上滑行时靠这个方法屏蔽按键（同时控制朝向）
 	public void Stand(Vector2 gravity, float delta)
 	{
 		Vector2 velocity = Velocity;
@@ -354,6 +326,14 @@ public partial class MainPlayer : CharacterBody2D
 		velocity.X = Mathf.MoveToward(velocity.X, 0, acceleration * (float)delta);
 		// Y分量持续添加重力加速度
 		velocity.Y += gravity.Y * (float)delta;
+
+		// 镜像切换动画方向
+		if (velocity.X != 0)
+		{
+			Vector2 scale = sprite2D.Scale;
+			scale.X = velocity.X > 0 ? 1 : -1;
+			sprite2D.Scale = scale;
+		}
 		Velocity = velocity;
 		// 执行移动
 		MoveAndSlide();
