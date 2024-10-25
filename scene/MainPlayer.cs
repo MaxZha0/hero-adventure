@@ -13,6 +13,10 @@ public partial class MainPlayer : Entity
 		LANDING,
 		WALL_SLIDING,
 		WALL_JUMP,
+		ATTACK_1,
+		ATTACK_2,
+		ATTACK_3,
+
 	}
 	// 移动速度
 	private static readonly float SPEED = 150.0f;
@@ -34,8 +38,14 @@ public partial class MainPlayer : Entity
 		State.IDLE,
 		State.RUNNING,
 		State.LANDING,
+		State.ATTACK_1,
+		State.ATTACK_2,
+		State.ATTACK_3,
 	};
-
+	// 攻击是否能链接
+	[Export] private bool CanCombo = false;
+	// 是否触发连击
+	private bool isComboRequest = false;
 	private AnimationPlayer animPlayer;
 	private Sprite2D sprite2D;
 	// 郊狼时间
@@ -82,6 +92,11 @@ public partial class MainPlayer : Entity
 				SetVelocityY(JUMP_VELOCITY / 2);
 			}
 		}
+		if (Input.IsActionJustReleased("attack") && CanCombo)
+		{
+			isComboRequest = true;
+		}
+
 	}
 
 	// 改变纵向速度的方法
@@ -104,6 +119,10 @@ public partial class MainPlayer : Entity
 		{
 			return (int)State.JUMP;
 		}
+		if (GROUND_STATES.Contains(state) && !IsOnFloor())// 在地上且地下没地板时下落
+		{
+			return (int)State.FALL;
+		}
 		Vector2 velocity = Velocity;
 		Vector2 direction = Input.GetVector("move_left", "move_right", "ui_up", "ui_down");
 		// IDLE状态：无按键并且X速度为0
@@ -111,9 +130,9 @@ public partial class MainPlayer : Entity
 		switch (state)
 		{
 			case State.IDLE:
-				if (!IsOnFloor()) // 不在地板上转为FALL
+				if (Input.IsActionJustReleased("attack"))
 				{
-					return (int)State.FALL;
+					return (int)State.ATTACK_1; // 按J攻击
 				}
 				if (!isStill) // 不静止转为RUNNING
 				{
@@ -121,9 +140,9 @@ public partial class MainPlayer : Entity
 				}
 				break;
 			case State.RUNNING:
-				if (!IsOnFloor()) // 不在地板上转为FALL
+				if (Input.IsActionJustReleased("attack"))
 				{
-					return (int)State.FALL;
+					return (int)State.ATTACK_1; // 按J攻击
 				}
 				if (isStill) // 静止了转为IDLE
 				{
@@ -188,6 +207,25 @@ public partial class MainPlayer : Entity
 					return (int)State.FALL;
 				}
 				break;
+
+			case State.ATTACK_1:
+				if (!animPlayer.IsPlaying())
+				{ // 动画播放完 链接2
+					return isComboRequest ? (int)State.ATTACK_2 : (int)State.IDLE;
+				}
+				break;
+			case State.ATTACK_2:
+				if (!animPlayer.IsPlaying())
+				{ // 动画播放完 链接3
+					return isComboRequest ? (int)State.ATTACK_3 : (int)State.IDLE;
+				}
+				break;
+			case State.ATTACK_3:
+				if (!animPlayer.IsPlaying())
+				{ // 动画播放完 结束
+					return (int)State.IDLE;
+				}
+				break;
 		}
 
 		return stateValue;
@@ -243,6 +281,18 @@ public partial class MainPlayer : Entity
 				// 实际起跳后停止起跳缓冲计时器
 				jumpBufferTimer.Stop();
 				break;
+			case State.ATTACK_1:
+				animPlayer.Play("attack_1");
+				isComboRequest = false;
+				break;
+			case State.ATTACK_2:
+				animPlayer.Play("attack_2");
+				isComboRequest = false;
+				break;
+			case State.ATTACK_3:
+				animPlayer.Play("attack_3");
+				isComboRequest = false;
+				break;
 		}
 		// 代表状态切换以后的第一帧，为了处理竖向加速度
 		isFirstTick = true;
@@ -278,6 +328,11 @@ public partial class MainPlayer : Entity
 			case State.WALL_JUMP:
 				// 肯定不是第一帧，跳跃正常重力即可
 				Move(GetGravity(), delta);
+				break;
+			case State.ATTACK_1:
+			case State.ATTACK_2:
+			case State.ATTACK_3:
+				Stand(GetGravity(), delta);
 				break;
 		}
 		isFirstTick = false;
