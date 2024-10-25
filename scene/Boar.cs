@@ -124,4 +124,9 @@ public partial class Boar : Enemy
         // Godot在物理帧开始时刷新，可能会有延迟，转身后强制更新
         floorChecker.ForceRaycastUpdate();
     }
+
+    public void OnHurt(HitBox hitBox)
+    {
+        GD.Print("小猪被攻击！");
+    }
 }

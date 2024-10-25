@@ -1,7 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://dgbscxcnpigt8"]
+[gd_scene load_steps=6 format=3 uid="uid://dgbscxcnpigt8"]
 
 [ext_resource type="Script" path="res://classes/StateMachine.cs" id="1_frnk8"]
 [ext_resource type="Script" path="res://scene/Enemy.cs" id="1_fx4we"]
+[ext_resource type="Script" path="res://classes/HurtBox.cs" id="3_vb46g"]
+[ext_resource type="Script" path="res://classes/HitBox.cs" id="3_wbmpk"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_r4icy"]
 height = 22.0
@@ -11,6 +13,14 @@ collision_layer = 4
 script = ExtResource("1_fx4we")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="Hitbot" type="Area2D" parent="Sprite2D"]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("3_wbmpk")
+
+[node name="HurtBox" type="Area2D" parent="Sprite2D"]
+script = ExtResource("3_vb46g")
 
 [node name="Collision2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_r4icy")

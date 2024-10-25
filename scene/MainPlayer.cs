@@ -15,7 +15,7 @@ public partial class MainPlayer : Entity
 		WALL_JUMP,
 		ATTACK_1,
 		ATTACK_2,
-		ATTACK_3,
+		HEAVY_ATTACK,
 
 	}
 	// 移动速度
@@ -40,7 +40,7 @@ public partial class MainPlayer : Entity
 		State.LANDING,
 		State.ATTACK_1,
 		State.ATTACK_2,
-		State.ATTACK_3,
+		State.HEAVY_ATTACK,
 	};
 	// 攻击是否能链接
 	[Export] private bool CanCombo = false;
@@ -134,6 +134,10 @@ public partial class MainPlayer : Entity
 				{
 					return (int)State.ATTACK_1; // 按J攻击
 				}
+				if (Input.IsActionJustReleased("heavy_attack"))
+				{
+					return (int)State.HEAVY_ATTACK; // 按k重击
+				}
 				if (!isStill) // 不静止转为RUNNING
 				{
 					return (int)State.RUNNING;
@@ -143,6 +147,10 @@ public partial class MainPlayer : Entity
 				if (Input.IsActionJustReleased("attack"))
 				{
 					return (int)State.ATTACK_1; // 按J攻击
+				}
+				if (Input.IsActionJustReleased("heavy_attack"))
+				{
+					return (int)State.HEAVY_ATTACK; // 按k重击
 				}
 				if (isStill) // 静止了转为IDLE
 				{
@@ -217,10 +225,10 @@ public partial class MainPlayer : Entity
 			case State.ATTACK_2:
 				if (!animPlayer.IsPlaying())
 				{ // 动画播放完 链接3
-					return isComboRequest ? (int)State.ATTACK_3 : (int)State.IDLE;
+					return (int)State.IDLE;
 				}
 				break;
-			case State.ATTACK_3:
+			case State.HEAVY_ATTACK:
 				if (!animPlayer.IsPlaying())
 				{ // 动画播放完 结束
 					return (int)State.IDLE;
@@ -289,7 +297,7 @@ public partial class MainPlayer : Entity
 				animPlayer.Play("attack_2");
 				isComboRequest = false;
 				break;
-			case State.ATTACK_3:
+			case State.HEAVY_ATTACK:
 				animPlayer.Play("attack_3");
 				isComboRequest = false;
 				break;
@@ -331,7 +339,7 @@ public partial class MainPlayer : Entity
 				break;
 			case State.ATTACK_1:
 			case State.ATTACK_2:
-			case State.ATTACK_3:
+			case State.HEAVY_ATTACK:
 				Stand(GetGravity(), delta);
 				break;
 		}
@@ -385,5 +393,10 @@ public partial class MainPlayer : Entity
 		Velocity = velocity;
 		// 执行移动
 		MoveAndSlide();
+	}
+
+	public void OnHurt(HitBox hitBox)
+	{
+		GD.Print("受伤！");
 	}
 }

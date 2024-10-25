@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dxa50oheq6e4w"]
+[gd_scene load_steps=15 format=3 uid="uid://dxa50oheq6e4w"]
 
 [ext_resource type="PackedScene" uid="uid://dgbscxcnpigt8" path="res://scene/enemy.tscn" id="1_sdytq"]
 [ext_resource type="Script" path="res://scene/Boar.cs" id="2_8g5h5"]
@@ -8,6 +8,9 @@
 [ext_resource type="Texture2D" uid="uid://bowjyasvxlkjn" path="res://res/enemy/Walk-Base-Sheet.png" id="5_blk3r"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ibkna"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2g3d6"]
+size = Vector2(10, 8)
 
 [sub_resource type="Animation" id="Animation_ibujr"]
 length = 0.001
@@ -368,6 +371,17 @@ position = Vector2(-10, 6)
 target_position = Vector2(-53, 0)
 collision_mask = 2
 
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/Hitbot" index="0"]
+position = Vector2(-15, 7)
+shape = SubResource("RectangleShape2D_2g3d6")
+
+[node name="HurtBox" parent="Sprite2D" index="4"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Sprite2D/HurtBox" index="0"]
+polygon = PackedVector2Array(-19, 3, -13, 3, -12, -3, -5, -5, 4, -5, 9, -1, 11, 4, 12, 9, 9, 12, 0, 12, -9, 12, -13, 12, -17, 11, -21, 10)
+
 [node name="Collision2D" parent="." index="1"]
 position = Vector2(0, -10)
 rotation = 1.5708
@@ -380,3 +394,5 @@ libraries = {
 [node name="CalmTimer" type="Timer" parent="." index="3"]
 wait_time = 2.5
 one_shot = true
+
+[connection signal="Hurt" from="Sprite2D/HurtBox" to="." method="OnHurt"]
