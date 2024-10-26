@@ -71,8 +71,20 @@ tile_set = ExtResource("2_j4i4e")
 [node name="Boar" parent="." instance=ExtResource("5_iv3ha")]
 position = Vector2(456, 164)
 
+[node name="Boar2" parent="." instance=ExtResource("5_iv3ha")]
+position = Vector2(757, 81)
+
+[node name="Boar3" parent="." instance=ExtResource("5_iv3ha")]
+position = Vector2(208, -202)
+
+[node name="Boar4" parent="." instance=ExtResource("5_iv3ha")]
+position = Vector2(1115, -166)
+
+[node name="Boar5" parent="." instance=ExtResource("5_iv3ha")]
+position = Vector2(1214, 199)
+
 [node name="Player" parent="." instance=ExtResource("2_1nxgk")]
-position = Vector2(617, 120)
+position = Vector2(88, 174)
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2(0, -14)
