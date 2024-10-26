@@ -12,7 +12,7 @@ public partial class Enemy : Entity
     // 面朝方向
     [Export] protected FaceDirections direction = FaceDirections.LEFT;
     // 最大速度(比玩家快一点)
-    protected static readonly float MAX_SPEED = 180f;
+    protected static readonly float MAX_SPEED = 100f;
 
     // 地板上的加速度（摩擦力）
     protected static readonly float ACCELERATION = MAX_SPEED / 0.1f;
@@ -20,6 +20,8 @@ public partial class Enemy : Entity
     protected AnimationPlayer animPlayer;
     protected Sprite2D sprite2D;
     protected StateMachine stateMachine;
+    public EnemyStats enemyStats;
+    // protected PlayerStats playerStats;
 
 
     // 本质上是个getter和setter的集合体
@@ -42,6 +44,7 @@ public partial class Enemy : Entity
         animPlayer = GetNode<AnimationPlayer>("AnimPlayer");
         sprite2D = GetNode<Sprite2D>("Sprite2D");
         stateMachine = GetNode<StateMachine>("StateMachine");
+        enemyStats = GetNode<EnemyStats>("Stats");
     }
 
     // 左右方向切换

@@ -6,10 +6,17 @@ public partial class HitBox : Area2D
 	// 声明信号（委托）
 	[Signal] public delegate void HitEventHandler(HurtBox hurtBox);
 
+	private CollisionObject2D heavyBox;
+
 	public override void _Ready()
 	{
 		// 动态链接信号（把节点的area_entered信号连接到当前节点的OnAreaEntered方法）
 		this.Connect("area_entered", new Callable(this, "OnAreaEntered"));
+		heavyBox = GetNode<CollisionObject2D>("AttackShape3");
+		if (heavyBox == null)
+		{
+			GD.Print("没找到：" + this.GetOwner().Name);
+		}
 	}
 
 	public void OnAreaEntered(HurtBox hurtBox)

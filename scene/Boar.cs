@@ -128,5 +128,11 @@ public partial class Boar : Enemy
     public void OnHurt(HitBox hitBox)
     {
         GD.Print("小猪被攻击！");
+        int damage = hitBox.GetOwner().GetNode<PlayerStats>("Stats").Attack;
+        enemyStats.Health -= damage;
+        if (enemyStats.Health <= 0)
+        {
+            this.QueueFree();
+        }
     }
 }

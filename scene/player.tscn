@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://cxl6nsmiu5l0t"]
+[gd_scene load_steps=25 format=3 uid="uid://cxl6nsmiu5l0t"]
 
 [ext_resource type="Script" path="res://scene/MainPlayer.cs" id="1_s8j65"]
 [ext_resource type="Texture2D" uid="uid://bs55ctil731g1" path="res://res/char_red_1.png" id="2_bdb5n"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://da1px55jfurqh" path="res://res/char_red_2.png" id="3_n8vim"]
 [ext_resource type="Script" path="res://classes/HitBox.cs" id="4_nrjd6"]
 [ext_resource type="Script" path="res://classes/StateMachine.cs" id="4_xlrmn"]
+[ext_resource type="Script" path="res://classes/PlayerStats.cs" id="8_mqw8e"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s1lju"]
 size = Vector2(10, 30)
@@ -811,5 +812,8 @@ one_shot = true
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("4_xlrmn")
+
+[node name="Stats" type="Node" parent="."]
+script = ExtResource("8_mqw8e")
 
 [connection signal="Hurt" from="Sprite2D/HurtBox" to="." method="OnHurt"]

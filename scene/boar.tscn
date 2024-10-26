@@ -10,7 +10,7 @@
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ibkna"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2g3d6"]
-size = Vector2(10, 8)
+size = Vector2(9, 5)
 
 [sub_resource type="Animation" id="Animation_ibujr"]
 length = 0.001
@@ -371,8 +371,8 @@ position = Vector2(-10, 6)
 target_position = Vector2(-53, 0)
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/Hitbot" index="0"]
-position = Vector2(-15, 7)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Sprite2D/HitBox" index="0"]
+position = Vector2(-15.5, 7.5)
 shape = SubResource("RectangleShape2D_2g3d6")
 
 [node name="HurtBox" parent="Sprite2D" index="4"]
@@ -382,17 +382,17 @@ collision_mask = 0
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Sprite2D/HurtBox" index="0"]
 polygon = PackedVector2Array(-19, 3, -13, 3, -12, -3, -5, -5, 4, -5, 9, -1, 11, 4, 12, 9, 9, 12, 0, 12, -9, 12, -13, 12, -17, 11, -21, 10)
 
-[node name="Collision2D" parent="." index="1"]
+[node name="CalmTimer" type="Timer" parent="." index="1"]
+wait_time = 2.5
+one_shot = true
+
+[node name="Collision2D" parent="." index="2"]
 position = Vector2(0, -10)
 rotation = 1.5708
 
-[node name="AnimPlayer" parent="." index="2"]
+[node name="AnimPlayer" parent="." index="3"]
 libraries = {
 "": SubResource("AnimationLibrary_c5r7j")
 }
-
-[node name="CalmTimer" type="Timer" parent="." index="3"]
-wait_time = 2.5
-one_shot = true
 
 [connection signal="Hurt" from="Sprite2D/HurtBox" to="." method="OnHurt"]
