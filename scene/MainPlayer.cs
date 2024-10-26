@@ -16,6 +16,8 @@ public partial class MainPlayer : Entity
 		ATTACK_1,
 		ATTACK_2,
 		HEAVY_ATTACK,
+		HURT,
+		DYING,
 	}
 	// 移动速度
 	private static readonly float SPEED = 150.0f;
@@ -51,6 +53,8 @@ public partial class MainPlayer : Entity
 	private Timer coyoteTimer;
 	// 落地起跳缓存时间
 	private Timer jumpBufferTimer;
+	// 受伤后无敌时间
+	private Timer invincibleTimer;
 	// 是否是改变状态后的第一帧
 	private bool isFirstTick = false;
 	// 爬墙脚部监测点
@@ -62,6 +66,9 @@ public partial class MainPlayer : Entity
 
 	private PlayerStats playerStats;
 
+	// 受到的伤害
+	private Damage pendingDamage;
+
 	public override void _Ready()
 	{
 		base._Ready();
@@ -69,6 +76,7 @@ public partial class MainPlayer : Entity
 		sprite2D = GetNode<Sprite2D>("Sprite2D");
 		coyoteTimer = GetNode<Timer>("CoyoteTimer");
 		jumpBufferTimer = GetNode<Timer>("JumpBufferTimer");
+		invincibleTimer = GetNode<Timer>("InvincibleTimer");
 		footCheck = GetNode<RayCast2D>("Sprite2D/footCheck");
 		handCheck = GetNode<RayCast2D>("Sprite2D/handCheck");
 		stateMachine = GetNode<StateMachine>("StateMachine");
@@ -105,6 +113,15 @@ public partial class MainPlayer : Entity
 	public override int GetNextState(int stateValue)
 	{
 		State state = (State)stateValue;
+		if (playerStats.Health <= 0)
+		{ // 血量归0就死亡,如果之前是DYING，则保持当前。
+			return state == State.DYING ? StateMachine.KEEP_CURRENT : (int)State.DYING;
+		}
+		if (pendingDamage != null)
+		{
+			return (int)State.HURT;
+		}
+
 		// 起跳条件：在地板上 或者 处于郊狼时间
 		bool canJump = IsOnFloor() || coyoteTimer.TimeLeft > 0;
 		// 如果能起跳，并且在起跳缓冲内，则允许起跳
@@ -229,6 +246,14 @@ public partial class MainPlayer : Entity
 					return (int)State.IDLE;
 				}
 				break;
+			case State.HURT:
+				if (!animPlayer.IsPlaying())
+				{
+					return (int)State.IDLE; // 受伤动画播放完了就IDLE
+				}
+				break;
+			case State.DYING: // 死亡时销毁节点的逻辑在动画中
+				break;
 		}
 
 		return StateMachine.KEEP_CURRENT;
@@ -297,6 +322,23 @@ public partial class MainPlayer : Entity
 				animPlayer.Play("attack_3");
 				isComboRequest = false;
 				break;
+			case State.HURT:
+				animPlayer.Play("hurt");
+				playerStats.Health -= pendingDamage.Value;
+				// 受到伤害的方向（伤害来源指向自己）
+				Vector2 damageDir = pendingDamage.Source.GlobalPosition.DirectionTo(GlobalPosition);
+				// 横向击退速度
+				SetVelocityX(damageDir.X * 300);
+				// 处理完以后删掉伤害记录
+				pendingDamage = null;
+				// 受伤后无敌
+				invincibleTimer.Start();
+				break;
+			case State.DYING:
+				animPlayer.Play("die");
+				// 死亡后停止计时
+				invincibleTimer.Stop();
+				break;
 		}
 		// 代表状态切换以后的第一帧，为了处理竖向加速度
 		isFirstTick = true;
@@ -306,6 +348,8 @@ public partial class MainPlayer : Entity
 	public override void TickPhysics(int stateValue, float delta)
 	{
 		State state = (State)stateValue;
+		// 如果受伤，则闪烁
+		SetPlayerHurtWarning();
 		// 跳跃第一帧不考虑加速度
 		Vector2 targetGravity = isFirstTick ? new Vector2(0, 0) : GetGravity();
 		switch (state)
@@ -338,6 +382,11 @@ public partial class MainPlayer : Entity
 			case State.HEAVY_ATTACK:
 				Stand(GetGravity(), delta);
 				break;
+			case State.HURT: // 受伤后硬直，站立不动
+			case State.DYING:
+				Stand(GetGravity(), delta);
+				break;
+
 		}
 		isFirstTick = false;
 	}
@@ -393,6 +442,41 @@ public partial class MainPlayer : Entity
 
 	public void OnHurt(HitBox hitBox)
 	{
-		GD.Print("受伤！");
+		if (invincibleTimer.TimeLeft > 0)
+		{
+			return; // 无敌期间不处理受伤状态
+		}
+		// 找到敌人状态
+		EnemyStats enemyStats = hitBox.GetOwner().GetNode<EnemyStats>("Stats");
+		GD.Print("OnHurt " + hitBox.GetOwner().Name);
+
+		// TODO pendingDamage可以优化为数组
+		pendingDamage = new Damage
+		{
+			Value = enemyStats.Attack,
+			Source = (Entity)hitBox.GetOwner()
+		};
+		GD.Print("受伤！" + pendingDamage.Value);
+	}
+
+	public void OnPlayerDie()
+	{
+		// 重新加载当前场景
+		GetTree().ReloadCurrentScene();
+	}
+
+	// 受伤后添加闪烁效果，原理为给画面叠加闪烁的图层
+	public void SetPlayerHurtWarning()
+	{
+		Color color = sprite2D.Modulate;
+		if (invincibleTimer.TimeLeft > 0)
+		{
+			color.A = (float)(Mathf.Sin(Time.GetTicksMsec() / 20) * 0.5 + 0.5);
+		}
+		else
+		{
+			color.A = 1f;
+		}
+		sprite2D.Modulate = color;
 	}
 }

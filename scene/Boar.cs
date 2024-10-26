@@ -8,7 +8,7 @@ public partial class Boar : Enemy
 		IDLE,
 		WALK,
 		RUN,
-		HITTED,
+		HURT,
 		DYING,
 	}
 	private static readonly float KNOCKBACK_VELOCITY = 300f;
@@ -48,7 +48,7 @@ public partial class Boar : Enemy
 
 		if (pendingDamage != null)
 		{
-			return (int)State.HITTED;
+			return (int)State.HURT;
 		}
 		switch (state)
 		{
@@ -82,7 +82,7 @@ public partial class Boar : Enemy
 					return (int)State.WALK; // 计时器清空，丢失仇恨
 				}
 				break;
-			case State.HITTED:
+			case State.HURT:
 				if (!animPlayer.IsPlaying())
 				{
 					return (int)State.RUN; // 受伤动画播放完了就继续跑
@@ -120,8 +120,8 @@ public partial class Boar : Enemy
 			case State.RUN:
 				animPlayer.Play("run");
 				break;
-			case State.HITTED:
-				animPlayer.Play("hitted");
+			case State.HURT:
+				animPlayer.Play("hurt");
 				enemyStats.Health -= pendingDamage.Value;
 				// 受到伤害的方向（伤害来源指向自己）
 				Vector2 damageDir = pendingDamage.Source.GlobalPosition.DirectionTo(GlobalPosition);
@@ -145,7 +145,7 @@ public partial class Boar : Enemy
 		State state = (State)stateValue;
 		switch (state)
 		{
-			case State.HITTED: // 受伤后硬直，站立不动
+			case State.HURT: // 受伤后硬直，站立不动
 			case State.DYING:
 			case State.IDLE:
 				Move(0f, delta);
@@ -179,7 +179,6 @@ public partial class Boar : Enemy
 	{
 		// 找到玩家状态
 		PlayerStats playerStats = hitBox.GetOwner().GetNode<PlayerStats>("Stats");
-
 		// TODO pendingDamage可以优化为数组
 		pendingDamage = new Damage
 		{
