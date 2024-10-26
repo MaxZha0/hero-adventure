@@ -71,9 +71,6 @@ tile_set = ExtResource("2_j4i4e")
 [node name="Boar" parent="." instance=ExtResource("5_iv3ha")]
 position = Vector2(456, 164)
 
-[node name="Boar2" parent="." instance=ExtResource("5_iv3ha")]
-position = Vector2(732, 74)
-
 [node name="Player" parent="." instance=ExtResource("2_1nxgk")]
 position = Vector2(617, 120)
 

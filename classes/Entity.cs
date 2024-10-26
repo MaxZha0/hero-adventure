@@ -19,4 +19,20 @@ public partial class Entity : CharacterBody2D
     {
     }
 
+    // 改变纵向速度的方法
+    public void SetVelocityY(float speed)
+    {
+        Vector2 velocity = Velocity;
+        velocity.Y = speed;
+        Velocity = velocity;
+    }
+
+    // 改变横向向速度的方法
+    public void SetVelocityX(float speed)
+    {
+        Vector2 velocity = Velocity;
+        velocity.X = speed;
+        Velocity = velocity;
+    }
+
 }

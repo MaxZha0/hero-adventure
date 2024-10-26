@@ -4,7 +4,7 @@ using System;
 public partial class EnemyStats : Node
 {
     // 最大血量
-    private int mMaxHealth = 7;
+    private int mMaxHealth = 70;
     // 当前血量
     private int mHealth;
     // 攻击力

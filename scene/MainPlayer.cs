@@ -16,7 +16,6 @@ public partial class MainPlayer : Entity
 		ATTACK_1,
 		ATTACK_2,
 		HEAVY_ATTACK,
-
 	}
 	// 移动速度
 	private static readonly float SPEED = 150.0f;
@@ -61,6 +60,8 @@ public partial class MainPlayer : Entity
 
 	private StateMachine stateMachine;
 
+	private PlayerStats playerStats;
+
 	public override void _Ready()
 	{
 		base._Ready();
@@ -71,6 +72,7 @@ public partial class MainPlayer : Entity
 		footCheck = GetNode<RayCast2D>("Sprite2D/footCheck");
 		handCheck = GetNode<RayCast2D>("Sprite2D/handCheck");
 		stateMachine = GetNode<StateMachine>("StateMachine");
+		playerStats = GetNode<PlayerStats>("Stats");
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -97,14 +99,6 @@ public partial class MainPlayer : Entity
 			isComboRequest = true;
 		}
 
-	}
-
-	// 改变纵向速度的方法
-	public void SetVelocityY(float speed)
-	{
-		Vector2 velocity = Velocity;
-		velocity.Y = speed;
-		Velocity = velocity;
 	}
 
 	// 根据当前人物状态，获取可能的状态改变值
@@ -231,12 +225,13 @@ public partial class MainPlayer : Entity
 			case State.HEAVY_ATTACK:
 				if (!animPlayer.IsPlaying())
 				{ // 动画播放完 结束
+					playerStats.IsHeavyAttack = false; // 标记重击结束
 					return (int)State.IDLE;
 				}
 				break;
 		}
 
-		return stateValue;
+		return StateMachine.KEEP_CURRENT;
 	}
 
 	// 改变状态需要做的事情
@@ -298,6 +293,7 @@ public partial class MainPlayer : Entity
 				isComboRequest = false;
 				break;
 			case State.HEAVY_ATTACK:
+				playerStats.IsHeavyAttack = true; // 标记重击
 				animPlayer.Play("attack_3");
 				isComboRequest = false;
 				break;

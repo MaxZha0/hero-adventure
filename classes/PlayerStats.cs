@@ -10,6 +10,10 @@ public partial class PlayerStats : Node
     // 攻击力
     private int mAttack = 3;
 
+    private float mHeavyDamageMultiplier = 5f;
+
+    private bool mIsHeavyAttack = false;
+
     public override void _Ready()
     {
         base._Ready();
@@ -35,6 +39,20 @@ public partial class PlayerStats : Node
             // 添加数据校验
             value = Mathf.Max(value, 0);
             mAttack = value;
+        }
+    }
+
+    public int HeavyAttack
+    {
+        get => (int)(mAttack * mHeavyDamageMultiplier + 0.5);
+    }
+
+    public bool IsHeavyAttack
+    {
+        get => mIsHeavyAttack;
+        set
+        {
+            mIsHeavyAttack = value;
         }
     }
 }

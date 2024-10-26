@@ -20,8 +20,10 @@ public partial class Enemy : Entity
     protected AnimationPlayer animPlayer;
     protected Sprite2D sprite2D;
     protected StateMachine stateMachine;
+    // 当前敌人的状态
     public EnemyStats enemyStats;
-    // protected PlayerStats playerStats;
+    // 受到的伤害
+    protected Damage pendingDamage;
 
 
     // 本质上是个getter和setter的集合体

@@ -4,6 +4,7 @@ using Godot;
 
 public partial class StateMachine : Node
 {
+    public static int KEEP_CURRENT = -1;
     public float mStateTime;
     // 当前状态为了和已有状态产生区别，定义为-1
     private int mCurrentState = -1;
@@ -36,7 +37,7 @@ public partial class StateMachine : Node
         {
             // 获取下一个状态
             int nextState = (int)mPlayer.GetNextState(mCurrentState);
-            if (mCurrentState == nextState) // 直到状态确定才退出
+            if (nextState == KEEP_CURRENT) // 直到状态确定才退出
             {
                 break;
             }
