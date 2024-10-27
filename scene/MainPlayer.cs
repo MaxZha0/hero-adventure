@@ -18,6 +18,9 @@ public partial class MainPlayer : Entity
 		HEAVY_ATTACK,
 		HURT,
 		DYING,
+		SLIDING_START,
+		SLIDING_LOOP,
+		SLIDING_END,
 	}
 	// 移动速度
 	private static readonly float SPEED = 150.0f;
@@ -32,6 +35,18 @@ public partial class MainPlayer : Entity
 
 	// 空中的加速度（翻身跳）
 	private static readonly float AIR_ACCELERATION = SPEED / 0.1f;
+
+	// 跑步滑铲速度
+	private static readonly float SLIDING_SPEED = 250f;
+
+	// 跑步滑铲停止速度
+	private static readonly float SLIDING_STOP_SPEED = SLIDING_SPEED / 2;
+
+	// 滑铲的减速加速度
+	private static readonly float SLIDING_ACCELERATION = SLIDING_SPEED / 0.5f;
+
+	// 下落时间阈值，大于这个值落地会有Landing
+	private static readonly float FALL_TIME = 0.5f;
 
 	// 集合，代表处于地面的状态
 	private static readonly State[] GROUND_STATES = new State[]
@@ -163,6 +178,10 @@ public partial class MainPlayer : Entity
 				{
 					return (int)State.HEAVY_ATTACK; // 按k重击
 				}
+				if (Input.IsActionJustReleased("slide") && playerStats.CanSlide())
+				{
+					return (int)State.SLIDING_START; // 按L滑铲(参加能量判断)
+				}
 				if (isStill) // 静止了转为IDLE
 				{
 					return (int)State.IDLE;
@@ -178,8 +197,8 @@ public partial class MainPlayer : Entity
 				if (IsOnFloor())
 				{
 					if (isStill) // 在地板上静止转为LANDING
-					{
-						return (int)State.LANDING;
+					{ // 跳跃时长>FALL_TIME,才做Landing
+						return stateMachine.mStateTime > FALL_TIME ? (int)State.LANDING : (int)State.IDLE;
 					}
 					else // 在地板上移动则直接转为RUNNING
 					{
@@ -192,10 +211,6 @@ public partial class MainPlayer : Entity
 				}
 				break;
 			case State.LANDING:
-				if (!isStill)
-				{
-					return (int)State.RUNNING;// 着陆时可以直接进入RUNNING
-				}
 				if (!animPlayer.IsPlaying())// 着陆动画播放完则转为IDLE
 				{
 					return (int)State.IDLE;
@@ -254,6 +269,25 @@ public partial class MainPlayer : Entity
 				break;
 			case State.DYING: // 死亡时销毁节点的逻辑在动画中
 				break;
+			case State.SLIDING_START:
+				if (!animPlayer.IsPlaying())
+				{
+					return (int)State.SLIDING_LOOP; // SLIDING_START动画播放完了就LOOP
+				}
+				break;
+			case State.SLIDING_LOOP:
+				// 滑铲速度降低后停止
+				if (Mathf.Abs(Velocity.X) <= SLIDING_STOP_SPEED)
+				{
+					return (int)State.SLIDING_END; // 滑铲持续时长到了就END
+				}
+				break;
+			case State.SLIDING_END:
+				if (!animPlayer.IsPlaying())
+				{
+					return (int)State.IDLE; // END动画播放完了就IDLE
+				}
+				break;
 		}
 
 		return StateMachine.KEEP_CURRENT;
@@ -264,7 +298,7 @@ public partial class MainPlayer : Entity
 	{
 		State from = (State)fromValue;
 		State to = (State)toValue;
-		// GD.Print("TransitionState " + from + " to " + to);
+		GD.Print("TransitionState " + from + " to " + to);
 		// 移动前在天上,移动后在地上,停止郊狼计数
 		if (!GROUND_STATES.Contains(from) && GROUND_STATES.Contains(to))
 		{
@@ -339,6 +373,16 @@ public partial class MainPlayer : Entity
 				// 死亡后停止计时
 				invincibleTimer.Stop();
 				break;
+			case State.SLIDING_START:
+				animPlayer.Play("sliding_start");
+				playerStats.DoSlide(); // 扣除能量
+				break;
+			case State.SLIDING_LOOP:
+				animPlayer.Play("sliding_loop");
+				break;
+			case State.SLIDING_END:
+				animPlayer.Play("sliding_end");
+				break;
 		}
 		// 代表状态切换以后的第一帧，为了处理竖向加速度
 		isFirstTick = true;
@@ -384,6 +428,17 @@ public partial class MainPlayer : Entity
 				break;
 			case State.HURT: // 受伤后硬直，站立不动
 			case State.DYING:
+				Stand(GetGravity(), delta);
+				break;
+			case State.SLIDING_START:
+				// 滑铲时不可控制
+				Slide(true, delta);
+				break;
+			case State.SLIDING_LOOP:
+				Slide(false, delta);
+				break;
+			case State.SLIDING_END:
+				// 滑铲结束要站起来，速度为0即可
 				Stand(GetGravity(), delta);
 				break;
 
@@ -440,6 +495,21 @@ public partial class MainPlayer : Entity
 		MoveAndSlide();
 	}
 
+	// 滑铲方法
+	public void Slide(bool isStart, float delta)
+	{
+		// X分量固定初速度
+		float maxSpeed = sprite2D.Scale.X * SLIDING_SPEED;
+		Vector2 velocity = Velocity;
+		// X分量 如果是滑铲开始，速度为最大值，滑铲中速度逐步降到0
+		velocity.X = isStart ? maxSpeed : Mathf.MoveToward(velocity.X, 0, SLIDING_ACCELERATION * delta);
+		// Y分量持续添加重力加速度
+		velocity.Y += GetGravity().Y * (float)delta;
+		Velocity = velocity;
+		// 执行移动
+		MoveAndSlide();
+	}
+
 	public void OnHurt(HitBox hitBox)
 	{
 		if (invincibleTimer.TimeLeft > 0)
@@ -478,5 +548,10 @@ public partial class MainPlayer : Entity
 			color.A = 1f;
 		}
 		sprite2D.Modulate = color;
+	}
+
+	public void MakeDamage()
+	{
+		GD.Print("打出伤害");
 	}
 }

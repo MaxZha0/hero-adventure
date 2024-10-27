@@ -33,3 +33,5 @@ script = ExtResource("1_frnk8")
 
 [node name="Stats" type="Node" parent="."]
 script = ExtResource("5_ncjng")
+
+[connection signal="Hurt" from="Sprite2D/HurtBox" to="." method="OnHurt"]

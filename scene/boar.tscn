@@ -606,5 +606,3 @@ rotation = 1.5708
 libraries = {
 "": SubResource("AnimationLibrary_c5r7j")
 }
-
-[connection signal="Hurt" from="Sprite2D/HurtBox" to="." method="OnHurt"]

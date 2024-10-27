@@ -100,7 +100,7 @@ public partial class Boar : Enemy
 	{
 		State from = (State)fromValue;
 		State to = (State)toValue;
-		GD.Print("TransitionState " + from + " to " + to);
+		// GD.Print("TransitionState " + from + " to " + to);
 		switch (to)
 		{
 			case State.IDLE:
@@ -173,19 +173,6 @@ public partial class Boar : Enemy
 		base.ChangeDirection();
 		// Godot在物理帧开始时刷新，可能会有延迟，转身后强制更新
 		floorChecker.ForceRaycastUpdate();
-	}
-
-	public void OnHurt(HitBox hitBox)
-	{
-		// 找到玩家状态
-		PlayerStats playerStats = hitBox.GetOwner().GetNode<PlayerStats>("Stats");
-		// TODO pendingDamage可以优化为数组
-		pendingDamage = new Damage
-		{
-			Value = playerStats.IsHeavyAttack ? playerStats.HeavyAttack : playerStats.Attack,
-			Source = (Entity)hitBox.GetOwner()
-		};
-		GD.Print("小猪被攻击！" + pendingDamage.Value);
 	}
 
 	public void OnDie()
