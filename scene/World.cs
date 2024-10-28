@@ -6,10 +6,14 @@ public partial class World : Node2D
 	private TileMapLayer mMap;
 
 	private Camera2D mCamera;
+
+	private MainPlayer mPlayer;
+
 	public override void _Ready()
 	{
 		mCamera = GetNode<Camera2D>("Player/Camera2D");
 		mMap = GetNode<TileMapLayer>("TileMap/TileTrunk");
+		mPlayer = GetNode<MainPlayer>("Player");
 
 		Rect2I usedRect = mMap.GetUsedRect().Grow(-1);
 		Vector2I tileSize = mMap.TileSet.TileSize;
@@ -22,8 +26,16 @@ public partial class World : Node2D
 		mCamera.ResetSmoothing();
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
+	}
+
+	// 更新玩家位置
+	public void UpdatePlayer(Vector2 pos)
+	{
+		mPlayer.GlobalPosition = pos;
+		// 镜头跟随
+		mCamera.ResetSmoothing();
+		// mCamera.ForceUpdateScroll();
 	}
 }

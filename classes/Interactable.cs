@@ -16,7 +16,7 @@ public partial class Interactable : Area2D
 	}
 
 
-	public void OnInteract()
+	public virtual void OnInteract()
 	{
 		GD.Print("Interact " + this.Name);
 		// 发出信号，进入交互区域

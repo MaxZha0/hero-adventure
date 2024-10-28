@@ -311,7 +311,7 @@ public partial class MainPlayer : Entity
 	{
 		State from = (State)fromValue;
 		State to = (State)toValue;
-		GD.Print("TransitionState " + from + " to " + to);
+		// GD.Print("TransitionState " + from + " to " + to);
 		// 移动前在天上,移动后在地上,停止郊狼计数
 		if (!GROUND_STATES.Contains(from) && GROUND_STATES.Contains(to))
 		{

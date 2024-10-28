@@ -1507,6 +1507,6 @@ script = ExtResource("8_mqw8e")
 position = Vector2(0, -46)
 sprite_frames = SubResource("SpriteFrames_g7ucb")
 autoplay = "default"
-frame_progress = 0.140554
+frame_progress = 0.798687
 
 [connection signal="Hurt" from="Sprite2D/HurtBox" to="." method="OnHurt"]
