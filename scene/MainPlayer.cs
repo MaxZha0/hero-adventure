@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 public partial class MainPlayer : Entity
@@ -81,8 +82,14 @@ public partial class MainPlayer : Entity
 
 	private PlayerStats playerStats;
 
+	// 当前玩家交互的对象
+	public List<Interactable> interactingList = new();
+
 	// 受到的伤害
 	private Damage pendingDamage;
+
+	// 提示交互按键 E
+	private AnimatedSprite2D interactionIcon;
 
 	public override void _Ready()
 	{
@@ -96,6 +103,7 @@ public partial class MainPlayer : Entity
 		handCheck = GetNode<RayCast2D>("Sprite2D/handCheck");
 		stateMachine = GetNode<StateMachine>("StateMachine");
 		playerStats = GetNode<PlayerStats>("Stats");
+		interactionIcon = GetNode<AnimatedSprite2D>("InteractionIcon");
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -117,9 +125,14 @@ public partial class MainPlayer : Entity
 				SetVelocityY(JUMP_VELOCITY / 2);
 			}
 		}
-		if (Input.IsActionJustReleased("attack") && CanCombo)
+		if (Input.IsActionJustPressed("attack") && CanCombo)
 		{
 			isComboRequest = true;
+		}
+		if (Input.IsActionJustPressed("interact") && interactingList.Count > 0)
+		{
+			// 交互列表有值，且按键了，则交互发生
+			interactingList.Last().OnInteract(); // 最后一个元素为新进入的元素
 		}
 
 	}
@@ -391,6 +404,7 @@ public partial class MainPlayer : Entity
 	// 代替原有的_PhysicsProcess,被状态机调用
 	public override void TickPhysics(int stateValue, float delta)
 	{
+		ShowInteractionIcon(); // 检查交互按键
 		State state = (State)stateValue;
 		// 如果受伤，则闪烁
 		SetPlayerHurtWarning();
@@ -550,8 +564,33 @@ public partial class MainPlayer : Entity
 		sprite2D.Modulate = color;
 	}
 
-	public void MakeDamage()
+	// 有交互对象了，才显示交换按键
+	private void ShowInteractionIcon()
 	{
-		GD.Print("打出伤害");
+		if (stateMachine.CurrentState == (int)State.DYING) // 死亡后不显示交互
+		{
+			interactionIcon.Visible = false;
+		}
+		interactionIcon.Visible = interactingList.Count > 0;
+	}
+
+	// 可交互列表注册
+	public void RegisterInteractable(Interactable interactable)
+	{
+		if (interactingList.Contains(interactable))
+		{
+			return;
+		}
+		interactingList.Add(interactable);
+	}
+
+	// 可交互列表移除
+	public void UnregisterInteractable(Interactable interactable)
+	{
+		if (interactingList.Contains(interactable))
+		{
+			interactingList.Remove(interactable);
+		}
+		return;
 	}
 }

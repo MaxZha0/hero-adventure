@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=4 uid="uid://bmoj03imnjj67"]
+[gd_scene load_steps=10 format=4 uid="uid://bmoj03imnjj67"]
 
 [ext_resource type="Script" path="res://scene/World.cs" id="1_be5e5"]
 [ext_resource type="PackedScene" uid="uid://cxl6nsmiu5l0t" path="res://scene/player.tscn" id="2_1nxgk"]
@@ -7,6 +7,9 @@
 [ext_resource type="Texture2D" uid="uid://dofvjc32vhkuc" path="res://res/BackgroundTree.png" id="3_m4imx"]
 [ext_resource type="PackedScene" uid="uid://dxa50oheq6e4w" path="res://scene/boar.tscn" id="5_iv3ha"]
 [ext_resource type="Texture2D" uid="uid://cayrac6wolrp4" path="res://res/Tree-Assets.png" id="6_pguiu"]
+[ext_resource type="Script" path="res://classes/Interactable.cs" id="8_bka0d"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yk51t"]
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_be5e5")
@@ -69,7 +72,7 @@ tile_map_data = PackedByteArray("AAArAAUAAAAKAAIAAAAtAAUAAAAIAAIAAAAvAAUAAAAJAAM
 tile_set = ExtResource("2_j4i4e")
 
 [node name="Boar" parent="." instance=ExtResource("5_iv3ha")]
-position = Vector2(456, 164)
+position = Vector2(283, 213)
 
 [node name="Boar2" parent="." instance=ExtResource("5_iv3ha")]
 position = Vector2(757, 81)
@@ -276,3 +279,19 @@ position = Vector2(35, -267)
 texture = ExtResource("6_pguiu")
 region_enabled = true
 region_rect = Rect2(210, 5, 124, 86)
+
+[node name="Save1" type="Area2D" parent="."]
+position = Vector2(341, 200)
+script = ExtResource("8_bka0d")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Save1"]
+position = Vector2(0, 7)
+shape = SubResource("RectangleShape2D_yk51t")
+
+[node name="Save2" type="Area2D" parent="."]
+position = Vector2(362, 200)
+script = ExtResource("8_bka0d")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Save2"]
+position = Vector2(0, 7)
+shape = SubResource("RectangleShape2D_yk51t")
