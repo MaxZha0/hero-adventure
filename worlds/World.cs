@@ -30,10 +30,11 @@ public partial class World : Node2D
 	{
 	}
 
-	// 更新玩家位置
-	public void UpdatePlayer(Vector2 pos)
+	// 更新玩家位置 和 面部朝向
+	public void UpdatePlayer(Vector2 pos, MainPlayer.FaceDirections face)
 	{
 		mPlayer.GlobalPosition = pos;
+		mPlayer.FaceDirection = face;
 		// 镜头跟随
 		mCamera.ResetSmoothing();
 		// mCamera.ForceUpdateScroll();

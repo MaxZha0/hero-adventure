@@ -71,7 +71,7 @@ public partial class Enemy : Entity
     public void OnHurt(HitBox hitBox)
     {
         // 找到玩家状态
-        PlayerStats playerStats = hitBox.GetOwner().GetNode<PlayerStats>("Stats");
+        PlayerStats playerStats = GetNode<Game>("/root/Game").playerStats;
         playerStats.DoDamage();
         // TODO pendingDamage可以优化为数组
         pendingDamage = new Damage

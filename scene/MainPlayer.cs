@@ -2,9 +2,17 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 public partial class MainPlayer : Entity
 {
+
+	public enum FaceDirections
+	{
+		RIGHT = 1,
+		LEFT = -1,
+	}
+
 	public enum State
 	{
 		IDLE,
@@ -23,6 +31,7 @@ public partial class MainPlayer : Entity
 		SLIDING_LOOP,
 		SLIDING_END,
 	}
+
 	// 移动速度
 	private static readonly float SPEED = 150.0f;
 
@@ -61,6 +70,9 @@ public partial class MainPlayer : Entity
 	};
 	// 攻击是否能链接
 	[Export] private bool CanCombo = false;
+
+	// 面向方向
+	private FaceDirections faceDir = FaceDirections.RIGHT;
 	// 是否触发连击
 	private bool isComboRequest = false;
 	private AnimationPlayer animPlayer;
@@ -91,6 +103,30 @@ public partial class MainPlayer : Entity
 	// 提示交互按键 E
 	private AnimatedSprite2D interactionIcon;
 
+	[Export]
+	public FaceDirections FaceDirection
+	{
+		get => faceDir;
+		set
+		{
+			faceDir = value;
+			//由于此调用不会等待，因此在此调用完成之前将会继续执行当前方法。请考虑将 "await" 运算符应用于调用结果。
+			_ = SetFaceDirectionAsync(faceDir);
+		}
+	}
+
+	// 设置面朝方向，需要异步
+	public async Task SetFaceDirectionAsync(FaceDirections face)
+	{
+		if (!IsNodeReady())
+		{
+			await ToSignal(this, SignalName.Ready);
+		}
+		Vector2 scale = sprite2D.Scale;
+		scale.X = (float)faceDir;
+		sprite2D.Scale = scale;
+	}
+
 	public override void _Ready()
 	{
 		base._Ready();
@@ -102,7 +138,8 @@ public partial class MainPlayer : Entity
 		footCheck = GetNode<RayCast2D>("Sprite2D/footCheck");
 		handCheck = GetNode<RayCast2D>("Sprite2D/handCheck");
 		stateMachine = GetNode<StateMachine>("StateMachine");
-		playerStats = GetNode<PlayerStats>("Stats");
+		// 引用为全局节点的引用
+		playerStats = GetNode<Game>("/root/Game").playerStats;
 		interactionIcon = GetNode<AnimatedSprite2D>("InteractionIcon");
 	}
 
@@ -477,9 +514,7 @@ public partial class MainPlayer : Entity
 		// 镜像切换动画方向
 		if (!direction.IsZeroApprox())
 		{
-			Vector2 scale = sprite2D.Scale;
-			scale.X = direction.X;
-			sprite2D.Scale = scale;
+			FaceDirection = (FaceDirections)direction.X;
 		}
 		Velocity = velocity;
 		// 执行移动
@@ -500,9 +535,7 @@ public partial class MainPlayer : Entity
 		// 镜像切换动画方向
 		if (velocity.X != 0)
 		{
-			Vector2 scale = sprite2D.Scale;
-			scale.X = velocity.X > 0 ? 1 : -1;
-			sprite2D.Scale = scale;
+			FaceDirection = velocity.X > 0 ? FaceDirections.RIGHT : FaceDirections.LEFT;
 		}
 		Velocity = velocity;
 		// 执行移动

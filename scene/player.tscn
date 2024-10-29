@@ -1,4 +1,4 @@
-[gd_scene load_steps=44 format=3 uid="uid://cxl6nsmiu5l0t"]
+[gd_scene load_steps=43 format=3 uid="uid://cxl6nsmiu5l0t"]
 
 [ext_resource type="Script" path="res://scene/MainPlayer.cs" id="1_s8j65"]
 [ext_resource type="Texture2D" uid="uid://bs55ctil731g1" path="res://res/char_red_1.png" id="2_bdb5n"]
@@ -9,7 +9,6 @@
 [ext_resource type="Script" path="res://classes/StateMachine.cs" id="4_xlrmn"]
 [ext_resource type="Texture2D" uid="uid://bv4opc1311qvx" path="res://res/Base-01.png" id="7_1jcbj"]
 [ext_resource type="Script" path="res://classes/StatsPanel.cs" id="7_p1hjd"]
-[ext_resource type="Script" path="res://classes/PlayerStats.cs" id="8_mqw8e"]
 [ext_resource type="Texture2D" uid="uid://jqtd3ellnxyo" path="res://res/gdb-keyboard-2.png" id="11_mdoj3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s1lju"]
@@ -1425,6 +1424,7 @@ shape = SubResource("RectangleShape2D_j2y5r")
 debug_color = Color(5.77569e-07, 0.833026, 0.968602, 0.42)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+visible = false
 
 [node name="VirtualJoyPad" parent="CanvasLayer" instance=ExtResource("3_m5vbn")]
 
@@ -1499,9 +1499,6 @@ one_shot = true
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("4_xlrmn")
-
-[node name="Stats" type="Node" parent="."]
-script = ExtResource("8_mqw8e")
 
 [node name="InteractionIcon" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -46)
