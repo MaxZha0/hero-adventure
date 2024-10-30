@@ -12,7 +12,7 @@ public partial class StatsPanel : HBoxContainer
 	private TextureProgressBar mUnderHealthBar;
 	public override void _Ready()
 	{
-		mPlayerStats = GetNode<Game>("/root/Game").playerStats;
+		mPlayerStats = GetNode<Game>("/root/Game").mPlayerStats;
 		mHealthBar = GetNode<TextureProgressBar>("Bars/HealthBar");
 		mUnderHealthBar = GetNode<TextureProgressBar>("Bars/HealthBar/UnderHealthBar");
 		mEnergyBar = GetNode<TextureProgressBar>("Bars/EnergyBar");

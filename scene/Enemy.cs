@@ -47,6 +47,9 @@ public partial class Enemy : Entity
         sprite2D = GetNode<Sprite2D>("Sprite2D");
         stateMachine = GetNode<StateMachine>("StateMachine");
         enemyStats = GetNode<EnemyStats>("Stats");
+
+        // 所有怪物加入分组
+        AddToGroup("enermy");
     }
 
     // 左右方向切换
@@ -71,7 +74,7 @@ public partial class Enemy : Entity
     public void OnHurt(HitBox hitBox)
     {
         // 找到玩家状态
-        PlayerStats playerStats = GetNode<Game>("/root/Game").playerStats;
+        PlayerStats playerStats = GetNode<Game>("/root/Game").mPlayerStats;
         playerStats.DoDamage();
         // TODO pendingDamage可以优化为数组
         pendingDamage = new Damage

@@ -72,22 +72,22 @@ tile_map_data = PackedByteArray("AABAAP//AAAKAAIAAABOAA0AAAAIAAIAAABQAA0AAAAGAAM
 tile_set = ExtResource("4_5m54g")
 
 [node name="TopEntry" type="Marker2D" parent="."]
-position = Vector2(85, -180)
+position = Vector2(90, -145)
 script = ExtResource("5_qtrnd")
 
 [node name="TopMineGate" parent="." instance=ExtResource("6_cplb2")]
 position = Vector2(-29, -331)
-Path = "res://worlds/forest.tscn"
+Path = "res://worlds/cave.tscn"
 EntryPoint = "BottomEntry"
 
 [node name="BottomEntry" type="Marker2D" parent="."]
-position = Vector2(1155, 207)
+position = Vector2(1128, 224)
 script = ExtResource("5_qtrnd")
 
-[node name="BottomMineGate2" parent="." instance=ExtResource("6_cplb2")]
+[node name="BottomMineGate" parent="." instance=ExtResource("6_cplb2")]
 position = Vector2(1015, 37)
-Path = "res://worlds/forest.tscn"
-EntryPoint = "TopEntry"
+Path = "res://worlds/cave.tscn"
+EntryPoint = "CaveEntry"
 
 [node name="Boar" parent="." instance=ExtResource("7_hoaq4")]
 position = Vector2(283, 213)
@@ -102,10 +102,10 @@ position = Vector2(439, -129)
 position = Vector2(966, -77)
 
 [node name="Boar5" parent="." instance=ExtResource("7_hoaq4")]
-position = Vector2(1214, 199)
+position = Vector2(1216, 215)
 
 [node name="Player" parent="." instance=ExtResource("8_ifg6a")]
-position = Vector2(99, -177)
+position = Vector2(105, 157)
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2(0, -14)

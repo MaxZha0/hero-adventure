@@ -139,8 +139,11 @@ public partial class MainPlayer : Entity
 		handCheck = GetNode<RayCast2D>("Sprite2D/handCheck");
 		stateMachine = GetNode<StateMachine>("StateMachine");
 		// 引用为全局节点的引用
-		playerStats = GetNode<Game>("/root/Game").playerStats;
+		playerStats = GetNode<Game>("/root/Game").mPlayerStats;
 		interactionIcon = GetNode<AnimatedSprite2D>("InteractionIcon");
+
+		// 为了玩家进入场景时不会成为FALL状态
+		Stand(GetGravity(), 0.01f);
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
