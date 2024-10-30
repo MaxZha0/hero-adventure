@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=4 uid="uid://bmoj03imnjj67"]
 
-[ext_resource type="Script" path="res://worlds/World.cs" id="1_d41kl"]
+[ext_resource type="Script" path="res://worlds/Forest.cs" id="1_d41kl"]
 [ext_resource type="Texture2D" uid="uid://dnrd0yx8rg23g" path="res://res/Background.png" id="2_xdp03"]
 [ext_resource type="Texture2D" uid="uid://dofvjc32vhkuc" path="res://res/BackgroundTree.png" id="3_buh71"]
 [ext_resource type="TileSet" uid="uid://lqe2k7y8mni2" path="res://map/mapTiles.tres" id="4_5m54g"]
@@ -12,6 +12,7 @@
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_d41kl")
+metadata/_edit_horizontal_guides_ = [256.0]
 
 [node name="ParallaxBack" type="ParallaxBackground" parent="."]
 
