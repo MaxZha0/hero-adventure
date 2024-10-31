@@ -1,8 +1,5 @@
 using Godot;
-using Godot.Collections;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 public partial class World : Node
 {
@@ -46,20 +43,38 @@ public partial class World : Node
 		// mCamera.ForceUpdateScroll();
 	}
 
-	public Godot.Collections.Dictionary toDict()
+	// 临时把场景中所有的数据都写入字典
+	public Dictionary<string, List<NodePath>> ToDict()
 	{
 		List<NodePath> enemiesAlive = new();
-		foreach (Enemy enemy in GetTree().GetNodesInGroup("enemy"))
+		// 根据敌人分组，便利所有状态，保存
+		foreach (Enemy enemy in GetTree().GetNodesInGroup("enermy"))
 		{
 			var path = GetPathTo(enemy);
 			enemiesAlive.Add(path);
 		}
-		return new Dictionary("", enemiesAlive);
+		return new Dictionary<string, List<NodePath>>()
+		{
+			{"enemiesAlive",enemiesAlive}
+		};
 
 	}
 
-	public void fromDict(Dictionary dic)
+	// 从字典中读取保存的数据
+	public void FromDict(Dictionary<string, List<NodePath>> dic)
 	{
-
+		foreach (Enemy enemy in GetTree().GetNodesInGroup("enermy"))
+		{
+			var path = GetPathTo(enemy);
+			List<NodePath> enemiesAlive = new();
+			if (!dic.TryGetValue("enemiesAlive", out enemiesAlive))
+			{
+				return;
+			}
+			if (!enemiesAlive.Contains(path))
+			{
+				enemy.QueueFree();
+			}
+		}
 	}
 }

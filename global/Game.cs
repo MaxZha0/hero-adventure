@@ -1,6 +1,7 @@
 using Godot;
 using Godot.Collections;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 public partial class Game : Node
@@ -14,7 +15,7 @@ public partial class Game : Node
 	// 世界状态: 场景的名称 =>{
 	// 	  enemies_alive => {敌人的路径}
 	// }
-	private Dictionary<string, Dictionary> mWorldState = new();
+	private System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, List<NodePath>>> mWorldState = new();
 	public override void _Ready()
 	{
 		mPlayerStats = GetNode<PlayerStats>("PlayerStats");
@@ -44,7 +45,7 @@ public partial class Game : Node
 
 		// 获得旧场景文件的文件名，例如“Cave” ##########################################
 		string oldWorld = tree.CurrentScene.SceneFilePath.GetFile().GetBaseName();
-		mWorldState[oldWorld] = ((World)tree.CurrentScene).toDict();
+		mWorldState[oldWorld] = ((World)tree.CurrentScene).ToDict();
 
 
 		tree.ChangeSceneToFile(path);
@@ -55,7 +56,7 @@ public partial class Game : Node
 		string newdWorld = tree.CurrentScene.SceneFilePath.GetFile().GetBaseName();
 		if (mWorldState.ContainsKey(newdWorld))
 		{
-			((World)(tree.CurrentScene)).fromDict(mWorldState[newdWorld]);
+			((World)tree.CurrentScene).FromDict(mWorldState[newdWorld]);
 
 		}
 
