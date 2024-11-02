@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System;
 
 public partial class Teleporter : Interactable
@@ -12,6 +13,6 @@ public partial class Teleporter : Interactable
     {
         base.OnInteract();
         // 场景变化是延迟的，调用之后无法立刻切换
-        GetNode<Game>("/root/Game").ChangeScene(Path, EntryPoint);
+        GetNode<Game>("/root/Game").ChangeScene(Path, new Dictionary() { { "EntryPoint", EntryPoint } });
     }
 }

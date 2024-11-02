@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System;
 
 public partial class PlayerStats : Node
@@ -103,6 +104,41 @@ public partial class PlayerStats : Node
         }
     }
 
+    public float HeavyDamageMultiplier
+    {
+        get => mHeavyDamageMultiplier;
+        set
+        {
+            // 添加数据校验
+            value = Mathf.Max(value, 0);
+            mHeavyDamageMultiplier = value;
+        }
+    }
+
+    public float SlidingEnergy
+    {
+        get => mSlidingEnergy;
+        set
+        {
+            // 添加数据校验
+            value = Mathf.Max(value, 0);
+            mSlidingEnergy = value;
+        }
+    }
+
+    public float EnergyRegion
+    {
+        get => mEnergyRegion;
+        set
+        {
+            // 添加数据校验
+            value = Mathf.Max(value, 0);
+            mEnergyRegion = value;
+        }
+    }
+
+
+
     public int HeavyAttack
     {
         get => (int)(mAttack * mHeavyDamageMultiplier + 0.5);
@@ -134,4 +170,85 @@ public partial class PlayerStats : Node
     {
         Energy += DO_DAMAGE_REGION_ENERGY;
     }
+
+    // 临时把场景中所有的数据都写入字典
+    public Dictionary ToDict()
+    {
+        return new Dictionary()
+        {
+            {MaxEnergy,MaxEnergy},
+            {"Energy",Energy},
+            {"MaxHealth",MaxHealth},
+            {"Health",Health},
+            {"Attack",Attack},
+            {"HeavyDamageMultiplier",HeavyDamageMultiplier},
+            {"SlidingEnergy",SlidingEnergy},
+            {"EnergyRegion",EnergyRegion},
+        };
+    }
+
+    // 从字典中读取保存的数据
+    public void FromDict(Dictionary dict)
+    {
+
+        if (dict.ContainsKey(MaxEnergy))
+            MaxEnergy = (float)dict["MaxEnergy"];
+
+        if (dict.ContainsKey("Energy"))
+            Energy = (float)dict["Energy"];
+
+        if (dict.ContainsKey("MaxHealth"))
+            MaxHealth = (int)dict["MaxHealth"];
+
+        if (dict.ContainsKey("Health"))
+            Health = (int)dict["Health"];
+
+        if (dict.ContainsKey("Attack"))
+            Attack = (int)dict["Attack"];
+
+        if (dict.ContainsKey("HeavyDamageMultiplier"))
+            HeavyDamageMultiplier = (float)dict["HeavyDamageMultiplier"];
+
+        if (dict.ContainsKey("SlidingEnergy"))
+            SlidingEnergy = (float)dict["SlidingEnergy"];
+
+        if (dict.ContainsKey("EnergyRegion"))
+            EnergyRegion = (float)dict["EnergyRegion"];
+    }
+
+
+    // // 临时把场景中所有的数据都写入字典
+    // public Dictionary<string, List<string>> ToDict()
+    // {
+    //     List<string> enemiesAlive = new();
+    //     // 根据敌人分组，便利所有状态，保存
+    //     foreach (Enemy enemy in GetTree().GetNodesInGroup("enermy"))
+    //     {
+    //         string path = GetPathTo(enemy);
+    //         enemiesAlive.Add(path);
+    //     }
+    //     return new Dictionary<string, List<string>>()
+    //     {
+    //         {"enemiesAlive",enemiesAlive}
+    //     };
+
+    // }
+
+    // // 从字典中读取保存的数据
+    // public void FromDict(Dictionary<string, List<string>> dic)
+    // {
+    //     foreach (Enemy enemy in GetTree().GetNodesInGroup("enermy"))
+    //     {
+    //         var path = GetPathTo(enemy);
+    //         List<string> enemiesAlive = new();
+    //         if (!dic.TryGetValue("enemiesAlive", out enemiesAlive))
+    //         {
+    //             return;
+    //         }
+    //         if (!enemiesAlive.Contains(path))
+    //         {
+    //             enemy.QueueFree();
+    //         }
+    //     }
+    // }
 }

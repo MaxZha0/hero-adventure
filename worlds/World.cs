@@ -1,5 +1,5 @@
 using Godot;
-using System.Collections.Generic;
+using Godot.Collections;
 
 public partial class World : Node
 {
@@ -8,7 +8,7 @@ public partial class World : Node
 
 	protected Camera2D mCamera;
 
-	protected MainPlayer mPlayer;
+	public MainPlayer mPlayer;
 
 	// 每个场景初始化自己的地图
 	public virtual void InitMap()
@@ -36,6 +36,7 @@ public partial class World : Node
 	// 更新玩家位置 和 面部朝向
 	public void UpdatePlayer(Vector2 pos, MainPlayer.FaceDirections face)
 	{
+		GD.Print("update " + pos.ToString() + ", dir " + face);
 		mPlayer.GlobalPosition = pos;
 		mPlayer.FaceDirection = face;
 		// 镜头跟随
@@ -44,33 +45,36 @@ public partial class World : Node
 	}
 
 	// 临时把场景中所有的数据都写入字典
-	public Dictionary<string, List<NodePath>> ToDict()
+	public Dictionary ToDict()
 	{
-		List<NodePath> enemiesAlive = new();
+		Array enemiesAlive = new();
 		// 根据敌人分组，便利所有状态，保存
 		foreach (Enemy enemy in GetTree().GetNodesInGroup("enermy"))
 		{
-			var path = GetPathTo(enemy);
+			// 返回值NodePath和string不是同种类型
+			string path = GetPathTo(enemy);
 			enemiesAlive.Add(path);
 		}
-		return new Dictionary<string, List<NodePath>>()
+
+		return new Dictionary()
 		{
-			{"enemiesAlive",enemiesAlive}
+			{"enemiesAlive",enemiesAlive},
 		};
 
 	}
 
 	// 从字典中读取保存的数据
-	public void FromDict(Dictionary<string, List<NodePath>> dic)
+	public void FromDict(Dictionary dic)
 	{
+		if (!dic.ContainsKey("enemiesAlive"))
+		{
+			return;
+		}
+		Array enemiesAlive = (Array)dic["enemiesAlive"];
 		foreach (Enemy enemy in GetTree().GetNodesInGroup("enermy"))
 		{
-			var path = GetPathTo(enemy);
-			List<NodePath> enemiesAlive = new();
-			if (!dic.TryGetValue("enemiesAlive", out enemiesAlive))
-			{
-				return;
-			}
+			string path = GetPathTo(enemy);
+
 			if (!enemiesAlive.Contains(path))
 			{
 				enemy.QueueFree();
