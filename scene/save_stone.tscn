@@ -186,8 +186,8 @@ region_enabled = true
 region_rect = Rect2(48, 288, 16, 16)
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
-position = Vector2(7.10543e-15, -58)
-scale = Vector2(0.859375, 1.20313)
+position = Vector2(-1, -73)
+scale = Vector2(1.36719, 1.20313)
 color = Color(0.664413, 0.708902, 1, 1)
 energy = 1.2
 texture = SubResource("GradientTexture2D_p8qgs")

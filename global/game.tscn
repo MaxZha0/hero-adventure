@@ -15,4 +15,5 @@ layer = 99
 [node name="FlashRect" type="ColorRect" parent="FlashLayer"]
 offset_right = 384.0
 offset_bottom = 216.0
+mouse_filter = 2
 color = Color(0, 0, 0, 1)

@@ -19,6 +19,11 @@ public partial class Game : Node
 	// 	  enemies_alive => {敌人的路径}
 	// }
 	private Dictionary mWorldState = new();
+
+	public static bool IsHasSave()
+	{
+		return FileAccess.FileExists(SAVE_PATH);
+	}
 	public override void _Ready()
 	{
 		mPlayerStats = GetNode<PlayerStats>("PlayerStats");
@@ -46,45 +51,52 @@ public partial class Game : Node
 		await ToSignal(tween, Tween.SignalName.Finished);
 
 
-		// 获得旧场景文件的文件名，例如“Cave” ##########################################
-		string oldWorld = tree.CurrentScene.SceneFilePath.GetFile().GetBaseName();
-		mWorldState[oldWorld] = ((World)tree.CurrentScene).ToDict();
+		if (tree.CurrentScene is World) // 从标题页进入不算
+		{
+			// 获得旧场景文件的文件名，例如“Cave” ##########################################
+			string oldWorld = tree.CurrentScene.SceneFilePath.GetFile().GetBaseName();
+			mWorldState[oldWorld] = ((World)tree.CurrentScene).ToDict();
+		}
+
 
 		tree.ChangeSceneToFile(path);
 		// Await*******************等待信号！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 		await ToSignal(tree, SceneTree.SignalName.TreeChanged);
 
-		// 反向操作，将数据恢复到新场景 ##########################################
-		string newdWorld = tree.CurrentScene.SceneFilePath.GetFile().GetBaseName();
-		if (mWorldState.ContainsKey(newdWorld))
-		{
-			((World)tree.CurrentScene).FromDict((Dictionary)mWorldState[newdWorld]);
 
-		}
-
-		GD.Print("change " + pos);
-		// 根据传入的值的类型判断。
-		if (pos.ContainsKey("EntryPoint")) // 传送门场景
+		if (tree.CurrentScene is World) // 从标题页进入不算
 		{
-			GD.Print("传送门场景");
-			string entryPoints = (string)pos["EntryPoint"];
-			foreach (EntryPoint node in tree.GetNodesInGroup("entry_points"))
+			// 反向操作，将数据恢复到新场景 ##########################################
+			string newdWorld = tree.CurrentScene.SceneFilePath.GetFile().GetBaseName();
+			if (mWorldState.ContainsKey(newdWorld))
 			{
-				// 如果分组中有入参点，则更新位置
-				if (node.Name == entryPoints)
+				((World)tree.CurrentScene).FromDict((Dictionary)mWorldState[newdWorld]);
+
+			}
+
+			GD.Print("change " + pos);
+			// 根据传入的值的类型判断。
+			if (pos.ContainsKey("EntryPoint")) // 传送门场景
+			{
+				GD.Print("传送门场景");
+				string entryPoints = (string)pos["EntryPoint"];
+				foreach (EntryPoint node in tree.GetNodesInGroup("entry_points"))
 				{
-					((World)tree.CurrentScene).UpdatePlayer(node.GlobalPosition, node.direction);
-					break;
+					// 如果分组中有入参点，则更新位置
+					if (node.Name == entryPoints)
+					{
+						((World)tree.CurrentScene).UpdatePlayer(node.GlobalPosition, node.direction);
+						break;
+					}
 				}
 			}
+			else if (pos.ContainsKey("Direction") && pos.ContainsKey("PositionX")) // 恢复场景
+			{
+				GD.Print("恢复场景");
+				Vector2 playerPos = new Vector2((float)pos["PositionX"], (float)pos["PositionY"]);
+				((World)tree.CurrentScene).UpdatePlayer(playerPos, (MainPlayer.FaceDirections)(float)pos["Direction"]);
+			}
 		}
-		else if (pos.ContainsKey("Direction") && pos.ContainsKey("PositionX")) // 恢复场景
-		{
-			GD.Print("恢复场景");
-			Vector2 playerPos = new Vector2((float)pos["PositionX"], (float)pos["PositionY"]);
-			((World)tree.CurrentScene).UpdatePlayer(playerPos, (MainPlayer.FaceDirections)(float)pos["Direction"]);
-		}
-
 
 		// 入场动画####################################################
 		tween = CreateTween();
@@ -152,6 +164,20 @@ public partial class Game : Node
 		// GD.Print("load " + json);
 	}
 
+	public void NewGame()
+	{
+
+		mWorldState = new Dictionary { };
+		mPlayerStats = new PlayerStats();
+		Dictionary data = new Dictionary() { };
+		ChangeScene("res://worlds/forest.tscn", data);
+	}
+
+	public void BackToTitle()
+	{
+		GetTree().ChangeSceneToFile("res://ui/main_title.tscn");
+	}
+
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		base._UnhandledInput(@event);
@@ -163,6 +189,11 @@ public partial class Game : Node
 		if (@event.IsActionPressed("load"))
 		{
 			LoadGame();
+		}
+
+		if (@event.IsActionPressed("ESC"))
+		{
+			GetNode<Game>("/root/Game").BackToTitle();
 		}
 	}
 }

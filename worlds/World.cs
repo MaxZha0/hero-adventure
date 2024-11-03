@@ -10,6 +10,15 @@ public partial class World : Node
 
 	public MainPlayer mPlayer;
 
+	// public override void _UnhandledInput(InputEvent @event)
+	// {
+	// 	base._UnhandledInput(@event);
+	// 	if (@event.IsActionPressed("ESC"))
+	// 	{
+	// 		GetNode<Game>("/root/Game").BackToTitle();
+	// 	}
+	// }
+
 	// 每个场景初始化自己的地图
 	public virtual void InitMap()
 	{
