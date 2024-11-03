@@ -1424,8 +1424,10 @@ shape = SubResource("RectangleShape2D_j2y5r")
 debug_color = Color(5.77569e-07, 0.833026, 0.968602, 0.42)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 20
 
 [node name="VirtualJoyPad" parent="CanvasLayer" instance=ExtResource("3_m5vbn")]
+visible = false
 
 [node name="StatsPanel" type="HBoxContainer" parent="CanvasLayer"]
 offset_left = 5.0

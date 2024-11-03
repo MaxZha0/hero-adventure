@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://dresfl7xdqofe"]
+
+[ext_resource type="Shader" path="res://map/Vignette.gdshader" id="1_2ntuw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lqta2"]
+shader = ExtResource("1_2ntuw")
+shader_parameter/alpha = 0.26
+shader_parameter/inner_radius = 0.845
+shader_parameter/outer_radius = 1.24
+
+[node name="Vignette" type="CanvasLayer"]
+layer = 10
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_lqta2")
+offset_right = 384.0
+offset_bottom = 216.0

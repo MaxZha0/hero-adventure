@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=4 uid="uid://dkt456lfdtk1k"]
+[gd_scene load_steps=7 format=4 uid="uid://dkt456lfdtk1k"]
 
 [ext_resource type="Script" path="res://worlds/Cave.cs" id="1_5ea0a"]
 [ext_resource type="TileSet" uid="uid://lqe2k7y8mni2" path="res://map/mapTiles.tres" id="4_0yfnf"]
 [ext_resource type="PackedScene" uid="uid://blf2kua08xnk4" path="res://scene/mine_gate.tscn" id="4_p4vdv"]
 [ext_resource type="Script" path="res://classes/EntryPoint.cs" id="5_1kndl"]
+[ext_resource type="PackedScene" uid="uid://ba5n4bqbbmax2" path="res://scene/save_stone.tscn" id="5_druu3"]
 [ext_resource type="PackedScene" uid="uid://cxl6nsmiu5l0t" path="res://scene/player.tscn" id="8_mj5c1"]
 
 [node name="World" type="Node2D"]
@@ -44,6 +45,9 @@ EntryPoint = "BottomEntry"
 position = Vector2(88, 192)
 script = ExtResource("5_1kndl")
 
+[node name="SaveStone" parent="." instance=ExtResource("5_druu3")]
+position = Vector2(928, 32)
+
 [node name="Player" parent="." instance=ExtResource("8_mj5c1")]
 position = Vector2(228, 149)
 
@@ -57,3 +61,6 @@ drag_horizontal_enabled = true
 drag_vertical_enabled = true
 drag_bottom_margin = 0.0
 editor_draw_drag_margin = true
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.453125, 0.453125, 0.453125, 1)
